@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#12141f">
+<title>Skipper-Assistent Ost-Sardinien v2</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2312141f'/%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%23fff' stroke-width='3'/%3E%3Cpath d='M32 10 L38 32 L32 54 L26 32Z' fill='%23ff5a1f'/%3E%3C/svg%3E">
+<style>
+/* ===== Theme tokens: day (default), dark (prefers-color-scheme), night (red on black) ===== */
+:root{
+  --bg:#f3f4f0; --card:#fff; --ink:#12141f; --mute:#4a4e60; --line:#c9cbc2;
+  --head:#12141f; --headink:#fff; --headmute:#b9bdd0;
+  --accent:#ff5a1f; --accent-ink:#b03a0a; --btn:#fff; --on:#12141f; --onink:#fff;
+  --g:#0f7a4d; --gt:#fff; --y:#ffc83d; --yt:#1a1400; --r:#c62828; --rt:#fff; --n:#5a5f70; --nt:#fff; --i:#1f4e8c; --it:#fff;
+  --gb:transparent; --yb:transparent; --rb:transparent;
+  --rose-full:#12141f; --rose-bg:#e6e8ee; --rose-line:#8a8ea0; --wind:#e8590c; --swell:#1f4e8c;
+  --warnbg:#fff3ec; --warnink:#6b2508; --emerg:#c62828;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme]){
+    --bg:#0e1018; --card:#1a1d2b; --ink:#eceef7; --mute:#aeb3c9; --line:#363b55;
+    --head:#05060b; --btn:#232738; --on:#eceef7; --onink:#0e1018; --accent-ink:#ff8a57;
+    --rose-full:#eceef7; --rose-bg:#2a2e42; --rose-line:#6d7391; --wind:#ff8a57; --swell:#7db4ff;
+    --warnbg:#2b1a12; --warnink:#ffd9c4;
+  }
+}
+:root[data-theme="night"]{
+  --bg:#000; --card:#120000; --ink:#ff6a5a; --mute:#d9483a; --line:#6a1212;
+  --head:#000; --headink:#ff6a5a; --headmute:#c03a2d;
+  --accent:#ff3b2a; --accent-ink:#ff6a5a; --btn:#1c0000; --on:#ff3b2a; --onink:#000;
+  --g:#1c0000; --gt:#ff8a7a; --gb:#ff6a5a; --y:#4a1400; --yt:#ffb3a0; --yb:#ff8a5a; --r:#d41a1a; --rt:#000; --rb:#ff3b2a; --n:#240808; --nt:#d98a80; --i:#1c0000; --it:#ff8a7a;
+  --rose-full:#ff3b2a; --rose-bg:#2a0000; --rose-line:#8a2a22; --wind:#ffd0c8; --swell:#ff9a8a;
+  --warnbg:#240000; --warnink:#ff9a8a; --emerg:#d41a1a;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45;padding-bottom:84px}
+.disp{font-family:"Arial Narrow","Helvetica Neue Condensed","Avenir Next Condensed",ui-sans-serif,sans-serif}
+.app{max-width:680px;margin:0 auto}
+button{font:inherit;color:inherit;touch-action:manipulation}
+header{position:sticky;top:0;z-index:20;background:var(--head);color:var(--headink);padding:8px 14px 8px;border-bottom:2px solid var(--line)}
+.hrow1{display:flex;align-items:center;gap:8px}
+header h1{font-size:1rem;letter-spacing:.05em;text-transform:uppercase;font-weight:700;flex:1;line-height:1.2}
+.themebtn{min-height:44px;min-width:48px;border:1.5px solid var(--headmute);border-radius:10px;background:transparent;color:var(--headink);padding:0 10px;font-weight:700;cursor:pointer}
+.posline{margin-top:3px;font-size:.95rem;color:var(--headink);line-height:1.3}
+.posline.warn{color:#ffd24d;font-weight:700}
+.chip-head{margin-top:5px;display:flex;gap:8px;align-items:center;font-weight:700;font-size:.95rem;border-radius:8px;padding:5px 9px;line-height:1.25}
+.chip-head.c-g{background:var(--g);color:var(--gt);border:2px solid var(--gb)}
+.chip-head.c-y{background:var(--y);color:var(--yt);border:2px dashed var(--yb)}
+.chip-head.c-r{background:var(--r);color:var(--rt);border:2px solid var(--rb)}
+.chip-head.c-n{background:var(--n);color:var(--nt)}
+.chip-head.c-i{background:var(--i);color:var(--it)}
+.screen{display:none;padding:14px 14px 24px}
+.screen.active{display:block}
+h2{font-size:1.05rem;letter-spacing:.05em;text-transform:uppercase;margin:22px 0 8px;color:var(--ink);font-weight:800}
+h2:first-child{margin-top:4px}
+h3{font-size:1rem;margin:12px 0 4px}
+p,.note{font-size:1rem;line-height:1.5}
+.note{color:var(--mute);margin-top:6px}
+.small{font-size:.875rem}
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:13px 14px;margin-top:12px}
+.card .t{font-weight:800;letter-spacing:.04em;text-transform:uppercase;font-size:1rem}
+.badge{display:inline-block;font-size:.8rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:20px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);vertical-align:1px;line-height:1.35}
+.badge.unv{border-style:dashed;border-color:var(--accent-ink);color:var(--accent-ink)}
+.badge.ver{border-color:var(--g);color:var(--ink)}
+.badge.dark{background:var(--on);color:var(--onink);border-color:var(--on)}
+.datenstand{font-size:.95rem;border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:8px 12px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:56px;padding:12px 14px;border:2px solid var(--on);border-radius:12px;background:var(--btn);color:var(--ink);font-weight:800;font-size:1.05rem;cursor:pointer;text-align:center}
+.btn.prim{background:var(--on);color:var(--onink)}
+.btn.sm{min-height:48px;font-size:1rem}
+details{margin-top:10px;background:var(--card);border:1.5px solid var(--line);border-radius:12px}
+summary{min-height:52px;display:flex;align-items:center;padding:8px 14px;font-weight:800;cursor:pointer;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"▾";margin-left:auto;font-size:1.1rem}
+details[open]>summary::after{content:"▴"}
+details>.in{padding:2px 14px 14px}
+.mapwrap{background:#12141f;border-radius:12px;padding:8px 4px 2px;overflow:hidden}
+:root[data-theme="night"] .mapwrap{background:#000;border:1.5px solid var(--line)}
+.mapwrap svg{width:100%;height:auto;display:block}
+.segdot{cursor:pointer}
+.segdot circle.hit{fill:transparent}
+.segdot circle.halo{fill:rgba(255,255,255,.12)}
+.segdot circle.core{fill:#fff;stroke:#12141f;stroke-width:1.5}
+.segdot text{fill:#dfe2f0;font-size:10.5px;font-family:"Arial Narrow",ui-sans-serif,sans-serif;letter-spacing:.02em}
+.segdot.sel circle.core{fill:#ff5a1f}
+.segdot.sel circle.halo{fill:rgba(255,90,31,.35)}
+.segdot.sel text{fill:#fff;font-weight:700}
+.segdot.near circle.halo{fill:rgba(255,200,61,.35)}
+:root[data-theme="night"] .segdot text{fill:#ff6a5a}
+:root[data-theme="night"] .segdot circle.core{fill:#ff6a5a;stroke:#000}
+:root[data-theme="night"] .segdot.sel circle.core{fill:#fff}
+.mapnote{font-size:.8rem;color:#9aa0b8;padding:2px 8px 8px;letter-spacing:.03em}
+select,input[type=text],input[type=number]{width:100%;min-height:52px;font-size:1.05rem;padding:8px 12px;border:2px solid var(--on);border-radius:10px;background:var(--card);color:var(--ink);font-family:inherit}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.tog{min-height:52px;border:2px solid var(--on);border-radius:10px;background:var(--btn);color:var(--ink);font-weight:800;font-size:1.05rem;cursor:pointer;padding:6px 4px}
+.tog[aria-pressed="true"]{background:var(--on);color:var(--onink)}
+.span4{grid-column:1/-1}
+.knrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.knbox{background:var(--card);border:2px solid var(--on);border-radius:12px;padding:8px 10px}
+.knbox .lbl{font-size:.85rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--mute)}
+.knbox .val{font-size:2.3rem;font-weight:800;line-height:1.1}
+.knbox .val small{font-size:1rem;font-weight:500;color:var(--mute)}
+.stepper{display:flex;gap:8px;margin-top:6px}
+.stepper button{flex:1;min-height:56px;font-size:1.6rem;font-weight:800;border:2px solid var(--on);border-radius:10px;background:var(--btn);color:var(--ink);cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.stepper button:active{background:var(--on);color:var(--onink)}
+.switch{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 12px;border:2px solid var(--on);border-radius:12px;background:var(--card);cursor:pointer;margin-top:8px;font-weight:700}
+.switch input{width:28px;height:28px;flex:none;accent-color:var(--on)}
+.switch small{display:block;font-weight:400;color:var(--mute);font-size:.9rem}
+.notice{margin-top:8px;font-size:.95rem;padding:8px 12px;border-radius:10px;background:var(--warnbg);color:var(--warnink);border:1.5px solid var(--accent)}
+.manual{display:grid;grid-template-columns:auto 1fr 1fr;gap:8px;align-items:center}
+.manual label{font-weight:800}
+.banner{margin-top:12px;border-radius:12px;padding:12px 14px}
+.banner .bt{font-weight:800;font-size:1.2rem;line-height:1.25;text-transform:uppercase;letter-spacing:.02em}
+.banner .bd{margin-top:5px;font-size:1rem;line-height:1.45}
+.banner .sym{font-size:1.4rem;margin-right:4px}
+.b-g{background:var(--g);color:var(--gt);border:2px solid var(--gb)}
+.b-y{background:var(--y);color:var(--yt);border:3px dashed var(--yb)}
+.b-r{background:var(--r);color:var(--rt);border:3px solid var(--rb)}
+.b-n{background:var(--n);color:var(--nt);border:2px dotted var(--line)}
+.b-i{background:var(--i);color:var(--it)}
+.segwarn{margin-top:12px;background:var(--warnbg);border:1.5px solid var(--accent);border-radius:12px;padding:10px 12px;color:var(--warnink)}
+.reffnum{font-size:2rem;font-weight:800;line-height:1.15}
+.hcard{display:grid;grid-template-columns:1fr auto;gap:4px 10px;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:11px 12px;margin-top:10px}
+.hcard.lv-g{border-left:8px solid var(--g)}
+.hcard.lv-y{border-left:8px dashed var(--y)}
+.hcard.lv-r{border-left:8px solid var(--r)}
+.hcard.lv-n{border-left:8px dotted var(--n)}
+:root[data-theme="night"] .hcard.lv-g{border-left-color:var(--gb)}
+:root[data-theme="night"] .hcard.lv-y{border-left-color:var(--yb)}
+:root[data-theme="night"] .hcard.lv-n{border-left-color:var(--mute)}
+.hname{font-weight:800;font-size:1.08rem;line-height:1.25}
+.chip{display:inline-block;font-weight:800;font-size:.95rem;padding:2px 9px;border-radius:8px;margin:3px 0}
+.chip.c-g{background:var(--g);color:var(--gt);border:2px solid var(--gb)}
+.chip.c-y{background:var(--y);color:var(--yt);border:2px dashed var(--yb)}
+.chip.c-r{background:var(--r);color:var(--rt);border:2px solid var(--rb)}
+.chip.c-n{background:var(--n);color:var(--nt)}
+.hmeta{font-size:.95rem;color:var(--mute)}
+.hmeta b{color:var(--ink)}
+.reasons{margin:4px 0 0 18px;font-size:.95rem}
+.rose{width:92px;height:92px;flex:none}
+.hside{grid-row:1 / span 3;grid-column:2;align-self:start;text-align:center}
+.hwide{grid-column:1/-1}
+.sectors{font-size:.9rem;margin-top:4px}
+.legend{font-size:.875rem;color:var(--mute);margin-top:8px}
+.rec{border:2.5px solid var(--g);border-radius:14px;padding:2px 10px 10px;margin-top:12px;background:var(--card)}
+:root[data-theme="night"] .rec{border-color:var(--gb)}
+.rec .rt{font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-size:.95rem;margin-top:8px}
+.rec .hcard{margin-top:6px}
+.bigbtn{display:flex;align-items:center;gap:14px;width:100%;min-height:72px;background:var(--emerg);color:#fff;border:3px solid transparent;border-radius:14px;padding:10px 16px;margin-top:10px;text-decoration:none;text-align:left}
+:root[data-theme="night"] .bigbtn{color:#000;border-color:#ff3b2a}
+.bigbtn .n{font-size:2.1rem;font-weight:800;min-width:92px;line-height:1}
+.bigbtn .l{font-size:1rem;line-height:1.3}
+.bigbtn.alt{background:var(--head);color:var(--headink);border-color:var(--emerg)}
+:root[data-theme="night"] .bigbtn.alt{color:#ff6a5a;background:#1c0000}
+.dsc{margin-top:10px;border:3px solid var(--emerg);border-radius:14px;padding:12px 14px;background:var(--card)}
+.dsc .bt{font-size:1.2rem;font-weight:800;color:var(--emerg)}
+:root[data-theme="night"] .dsc .bt{color:#ff6a5a}
+.posbox{font-size:1.65rem;font-weight:800;line-height:1.25;margin-top:8px;word-break:break-word}
+.mayday{font-size:1.1rem;line-height:1.7;margin-top:8px}
+.mayday .ph{background:var(--y);color:var(--yt);padding:0 6px;border-radius:5px;font-weight:700;border:1px dashed var(--yb)}
+.mayday div{padding:3px 0;border-bottom:1px solid var(--line)}
+.mayday div:last-child{border-bottom:none}
+.fields{display:grid;gap:8px;margin-top:8px}
+.fields label{font-weight:800;font-size:.9rem;display:block;margin-bottom:2px}
+table.tbl{width:100%;border-collapse:collapse;margin-top:8px;font-size:1rem}
+.tbl th,.tbl td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.tbl th{font-size:.85rem;text-transform:uppercase;letter-spacing:.04em;color:var(--mute)}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:9px 2px;border-bottom:1px solid var(--line)}
+.kv:last-child{border-bottom:none}
+.kv b{text-align:right}
+ul.tight{padding-left:20px;line-height:1.55}
+ul.tight li{margin-bottom:6px}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;background:var(--head);padding:6px 6px calc(6px + env(safe-area-inset-bottom));border-top:2px solid var(--line);gap:6px}
+nav button{flex:1;min-height:56px;background:transparent;border:2px solid transparent;border-radius:10px;color:var(--headmute);font-weight:800;font-size:.85rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+nav button .ic{font-size:1.3rem;line-height:1}
+nav button.on{color:var(--headink);border-color:var(--headink)}
+nav button.sos{background:var(--emerg);color:#fff;border-color:var(--emerg)}
+nav button.sos.on{border-color:#fff}
+:root[data-theme="night"] nav button.sos{background:#d41a1a;color:#000}
+:root[data-theme="night"] nav button.sos.on{border-color:#ffb3a0}
+.hidden-svg{position:absolute;width:0;height:0;overflow:hidden}
+#printdoc{display:none}
+/* ===== PRINT (Bordkarte A4) – generated from the same DATA ===== */
+@page{size:A4;margin:9mm 9mm 10mm 9mm}
+@media print{
+  :root,:root[data-theme]{--bg:#fff;--card:#fff;--ink:#000;--mute:#333;--line:#999;--g:#0f7a4d;--y:#ffc83d;--r:#c62828;--rose-full:#000;--rose-bg:#fff;--emerg:#c62828}
+  html{font-size:10pt}
+  body{background:#fff;color:#000;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .app,nav,header{display:none!important}
+  #printdoc{display:block;font-family:Arial,"Helvetica Neue",sans-serif;font-size:8.5pt;line-height:1.3}
+  #printdoc .pp{break-before:page}
+  #printdoc .pp:first-child{break-before:auto}
+  #printdoc h1{font-size:14pt;margin:0 0 1mm}
+  #printdoc .sub{font-size:8.5pt;margin-bottom:2mm;color:#222}
+  #printdoc h2{font-size:10pt;margin:2.5mm 0 1mm;padding:0.6mm 1.5mm;background:#12141f;color:#fff;text-transform:uppercase;letter-spacing:.04em;break-after:avoid}
+  #printdoc h2.red{background:#c62828}
+  #printdoc .nums{display:grid;grid-template-columns:repeat(3,1fr);gap:2mm}
+  #printdoc .num{border:1.2pt solid #c62828;border-radius:2mm;padding:1.2mm 2mm;break-inside:avoid}
+  #printdoc .num b{font-size:15pt;display:block;line-height:1.1;color:#c62828}
+  #printdoc .box{border:1pt solid #444;border-radius:1.5mm;padding:1.5mm 2.5mm;margin-top:1.5mm;break-inside:avoid}
+  #printdoc .box.red{border:1.6pt solid #c62828}
+  #printdoc .box .ln{display:block;border-bottom:0.6pt solid #666;min-height:5.2mm;padding-top:1mm}
+  #printdoc .two{display:grid;grid-template-columns:1fr 1fr;gap:2mm}
+  #printdoc table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:7pt}
+  #printdoc th{background:#e4e6ee;text-align:left;font-size:6.6pt;padding:0.8mm 1mm;border:0.5pt solid #777}
+  #printdoc td{padding:0.7mm 1mm;border:0.5pt solid #aaa;vertical-align:top;overflow-wrap:anywhere}
+  #printdoc tr{break-inside:avoid}
+  #printdoc tbody.pl{break-inside:avoid}
+  #printdoc tbody.gh{break-after:avoid}
+  #printdoc tbody.gh th{background:#12141f;color:#fff;font-size:8pt;letter-spacing:.04em;text-transform:uppercase;break-after:avoid}
+  #printdoc tbody.gh tr{break-after:avoid}
+  #printdoc tr.nt td{font-size:6.4pt;color:#222;border-top:none;background:#f6f6f6}
+  #printdoc tr.main td{border-bottom:none}
+  #printdoc .unv{color:#8a3a00;font-weight:700}
+  #printdoc .ok{color:#0b5e3a;font-weight:700}
+  #printdoc .rt td{font-size:8pt}
+  #printdoc .foot{margin-top:3mm;font-size:7.5pt;border-top:0.8pt solid #000;padding-top:1mm}
+  #printdoc .lv{display:inline-block;padding:0 1.5mm;font-weight:700;border:0.8pt solid #000;border-radius:1mm;margin-right:1mm}
+  a{color:inherit;text-decoration:none}
+}
+</style>
+</head>
+<body>
+<svg class="hidden-svg" aria-hidden="true" focusable="false"><defs>
+  <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <rect width="6" height="6" style="fill:var(--rose-bg)"/><line x1="0" y1="0" x2="0" y2="6" style="stroke:var(--rose-full)" stroke-width="2.2"/>
+  </pattern></defs></svg>
+
+<div class="app">
+<header>
+  <div class="hrow1">
+    <h1 class="disp">Skipper · Ost-Sardinien</h1>
+    <button class="themebtn" id="themebtn" aria-pressed="false" title="Nachtmodus (rot auf schwarz)">☾ Nacht</button>
+  </div>
+  <div class="posline" id="posline">Position: nicht gewählt</div>
+  <div class="chip-head c-n" id="overallchip"><span>?</span><span>Noch keine Bewertung – Position, Windrichtung, Wind und Böen eingeben</span></div>
+</header>
+
+<!-- ============ LAGE ============ -->
+<section class="screen active" id="scr-lage">
+  <div class="datenstand" id="datenstand"></div>
+  <div class="note small" id="offlinestate"></div>
+
+  <h2>1 · Position</h2>
+  <button class="btn prim" id="btn-gps">◎ GPS-Position holen</button>
+  <div class="note" id="gpsmsg">GPS funktioniert auch ohne Mobilfunk. Falls nicht verfügbar: manuell vom Plotter oder Abschnitt wählen.</div>
+  <details id="det-manual"><summary>Manuell vom Plotter (Grad + Dezimalminuten)</summary>
+    <div class="in">
+      <div class="manual">
+        <label for="latd">Breite N</label>
+        <input type="text" inputmode="numeric" id="latd" placeholder="40" aria-label="Breite Grad">
+        <input type="text" inputmode="decimal" id="latm" placeholder="55.0" aria-label="Breite Minuten">
+        <label for="lond">Länge E</label>
+        <input type="text" inputmode="numeric" id="lond" placeholder="9" aria-label="Länge Grad">
+        <input type="text" inputmode="decimal" id="lonm" placeholder="31.0" aria-label="Länge Minuten">
+      </div>
+      <button class="btn sm" id="btn-manual" style="margin-top:10px">Position übernehmen</button>
+      <div class="note small" id="manualmsg">Beispiel: 40 | 55.0 und 9 | 31.0 (Grad | Dezimalminuten, nördl. Breite, östl. Länge).</div>
+    </div>
+  </details>
+  <details id="det-seg" open><summary>Oder Abschnitt wählen (Näherung)</summary>
+    <div class="in">
+      <div class="mapwrap"><svg id="coastmap" viewBox="0 0 340 545" role="group" aria-label="Schematische Karte"></svg>
+        <div class="mapnote">SCHEMATISCH · KEINE SEEKARTE · NICHT MASSSTÄBLICH</div></div>
+      <select id="segselect" aria-label="Abschnitt wählen" style="margin-top:10px"><option value="">— Abschnitt wählen —</option></select>
+    </div>
+  </details>
+
+  <h2>2 · Wind und See</h2>
+  <h3>Windrichtung (Wind kommt AUS)</h3>
+  <div class="grid4" id="dirgrid"></div>
+  <div class="knrow" style="margin-top:10px">
+    <div class="knbox"><div class="lbl">Wind wahr</div><div class="val" id="windval">–</div>
+      <div class="stepper"><button data-k="windTrue" data-d="-1" aria-label="Wind minus">−</button><button data-k="windTrue" data-d="1" aria-label="Wind plus">+</button></div></div>
+    <div class="knbox"><div class="lbl">Böen wahr</div><div class="val" id="gustval">–</div>
+      <div class="stepper"><button data-k="gust" data-d="-1" aria-label="Böen minus">−</button><button data-k="gust" data-d="1" aria-label="Böen plus">+</button></div></div>
+  </div>
+  <div class="note small">Böen entscheiden, nicht der Mittelwind. Lange drücken = schnell. Werte aus Tagesreport, UKW CH 68 oder NAVTEX.</div>
+  <div class="notice" id="gustnotice" style="display:none"></div>
+
+  <h3 style="margin-top:14px">Dünung aus</h3>
+  <div class="grid4" id="swelldirgrid"></div>
+  <div class="knrow" style="margin-top:10px">
+    <div class="knbox"><div class="lbl">Dünung Höhe</div><div class="val" id="swellval">0,0 <small>m</small></div>
+      <div class="stepper"><button data-k="swellH" data-d="-0.5" aria-label="Dünung minus">−</button><button data-k="swellH" data-d="0.5" aria-label="Dünung plus">+</button></div></div>
+    <div class="knbox"><div class="lbl">Kurs zum Wind</div>
+      <div class="grid2" id="coursegrid" style="margin-top:6px"></div></div>
+  </div>
+
+  <label class="switch"><input type="checkbox" id="kids" checked><span>Kinder an Bord<small>Reff- und Ampel-Schwellen −3 kn (Standard: an)</small></span></label>
+  <label class="switch"><input type="checkbox" id="trend"><span>Winddrehung / Front erwartet<small>Mindestens gelb, Ankerplatz muss bei gedrehtem Wind halten</small></span></label>
+
+  <h2>3 · Bewertung</h2>
+  <div id="result"></div>
+</section>
+
+<!-- ============ ZUFLUCHT ============ -->
+<section class="screen" id="scr-zuflucht">
+  <h2>Zuflucht · Ausweichliste</h2>
+  <div class="note" id="zinfo"></div>
+  <div class="knrow" style="margin-top:10px">
+    <div class="knbox"><div class="lbl">Fahrt (kn)</div><div class="val" id="speedval">6</div>
+      <div class="stepper"><button data-k="speed" data-d="-1" aria-label="Fahrt minus">−</button><button data-k="speed" data-d="1" aria-label="Fahrt plus">+</button></div></div>
+    <div class="knbox"><div class="lbl">Filter</div>
+      <button class="tog" id="filtertog" aria-pressed="true" style="width:100%;margin-top:6px">nur grün/gelb</button></div>
+  </div>
+  <div id="zlist"></div>
+</section>
+
+<!-- ============ NOTFALL ============ -->
+<section class="screen" id="scr-notfall">
+  <h2 style="color:var(--emerg)">Notfall</h2>
+  <a class="bigbtn" href="tel:1530"><span class="n disp">1530</span><span class="l"><b>Guardia Costiera</b> · Numero Blu · 24 h</span></a>
+  <a class="bigbtn alt" href="tel:112"><span class="n disp">112</span><span class="l"><b>Europanotruf</b><br>Nur mit Mobilfunknetz – auf See oft keins. Primär UKW.</span></a>
+  <a class="bigbtn alt" href="tel:118"><span class="n disp">118</span><span class="l"><b>Medizinischer Notfall</b> Italien</span></a>
+
+  <div class="dsc"><div class="bt">UKW-DSC-Distress zuerst</div>
+    <p style="margin-top:4px"><b>Rote DSC-Distress-Taste 5 Sekunden halten</b> → danach MAYDAY auf <b>CH 16</b> sprechen.</p>
+    <p class="note">MMSI muss im Gerät programmiert sein – beim Charter-Check prüfen.</p></div>
+
+  <h2>Meine Position (für den Notruf)</h2>
+  <button class="btn prim" id="btn-mypos" style="min-height:64px">◎ Meine Position</button>
+  <div id="myposout" class="card" style="display:none"></div>
+
+  <h2>MAYDAY – zum Vorlesen</h2>
+  <div class="card" style="margin-top:0">
+    <div class="fields">
+      <div><label for="f-name">Schiffsname</label><input type="text" id="f-name" autocomplete="off" autocapitalize="characters"></div>
+      <div><label for="f-call">Rufzeichen</label><input type="text" id="f-call" autocomplete="off" autocapitalize="characters"></div>
+      <div><label for="f-mmsi">MMSI</label><input type="text" inputmode="numeric" id="f-mmsi" autocomplete="off"></div>
+      <div><label for="f-pers">Personen an Bord</label><input type="text" inputmode="numeric" id="f-pers" autocomplete="off"></div>
+    </div>
+    <div class="note small">Felder werden lokal gespeichert (nur dieses Gerät). Gelb = noch auszufüllen.</div>
+    <div class="mayday" id="maydaytext"></div>
+  </div>
+  <div class="card"><div class="t">PAN PAN</div>
+    <p style="margin-top:4px">Dringlichkeit <b>ohne</b> unmittelbare Lebensgefahr: gleiches Schema, aber „PAN PAN PAN PAN PAN PAN“ statt „MAYDAY MAYDAY MAYDAY“.</p></div>
+  <div class="card"><div class="t">Zuständige Stellen</div>
+    <ul class="tight" style="margin-top:6px">
+      <li><b>Italien:</b> MRCC Rom – erreichbar über <b>1530</b> / UKW <b>CH 16</b>.</li>
+      <li><b>Französische Gewässer</b> (Bonifacio, Lavezzi, Porto-Vecchio): zuständig <b>CROSS MED (Corse)</b> – über UKW <b>CH 16</b> erreichbar. Telefonnummer: <span class="badge unv">ungeprüft</span>, nicht angegeben.</li>
+    </ul></div>
+
+  <h2>Funk · Wetter an Bord</h2>
+  <div class="card" id="funkcard" style="margin-top:0"></div>
+  <details id="det-vhf"><summary>Hafen-Kanäle (aus Datenbestand)</summary><div class="in" id="vhfcard"></div></details>
+</section>
+
+<!-- ============ REGELN ============ -->
+<section class="screen" id="scr-regeln">
+  <h2>Regeln und Schwellen</h2>
+  <div class="card"><div class="t">Reff-Plan (scheinbarer Wind)</div>
+    <div id="refftbl"></div>
+    <div class="note">Maßgeblich ist der <b>scheinbare Wind inkl. Böen</b>: Böen (wahr) × Kursfaktor, aufgerundet (Näherung bei ca. 7 kn Fahrt). Mit Kindern an Bord gelten alle Schwellen −3 kn.</div></div>
+  <div class="card"><div class="t">Ampel unterwegs (Böen wahr)</div><div id="traffictbl"></div></div>
+  <div class="card"><div class="t">Zufluchtsort-Status</div><div id="harborrules"></div></div>
+  <div class="card"><div class="t">Revier-Gates</div><div id="gaterules"></div></div>
+  <div class="card"><div class="t">Revier-Hinweise</div>
+    <ul class="tight" style="margin-top:6px">
+      <li><b>Golfo di Orosei:</b> Bei Ost-Wetter nicht hineinfahren – im Hafen warten. Cala Gonone ist bei N–E-Dünung gefährlich.</li>
+      <li><b>Straße von Bonifacio:</b> Düseneffekt, in der Passage +10–15 kn über Prognose erwarten (Mistral W/NW, Levante E/SE).</li>
+      <li><b>Abendliche Ostbrise</b> beachten: Palau, Cannigione und Cala di Volpe sind gegen E/NE offen.</li>
+      <li><b>Teulada:</b> Militärisches Sperrgebiet – aktuelle NAVTEX-Meldungen beachten.</li>
+      <li>Report-Zeiten im Chat: 07:15 / 12:30 / 17:30. Vor dem Auslaufen abrufen – unterwegs gibt es Funklöcher.</li>
+    </ul></div>
+  <div class="card"><div class="t">Datenqualität</div><div id="dataqual"></div></div>
+  <div class="card" style="border-color:var(--accent)"><div class="t">Wichtig</div>
+    <p class="disc" style="margin-top:6px"></p></div>
+</section>
+</div>
+
+<nav>
+  <button data-scr="scr-lage" class="on"><span class="ic">◎</span>Lage</button>
+  <button data-scr="scr-zuflucht"><span class="ic">⚓</span>Zuflucht</button>
+  <button data-scr="scr-notfall" class="sos"><span class="ic">✚</span>Notfall</button>
+  <button data-scr="scr-regeln"><span class="ic">≡</span>Regeln</button>
+</nav>
+
+<div id="printdoc"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* =====================================================================
+   DATA – single source for app UI, rules screen and printed Bordkarte.
+   Nothing here may be invented: unknown stays empty/false.
+   ===================================================================== */
+var DIRS=['N','NE','E','SE','S','SW','W','NW'];
+var DISCLAIMER='Ersetzt weder Seekarte, Revierführer noch amtlichen Seewetterbericht. Entscheidung liegt beim Skipper.';
+var TYPE_LABEL={aw:'Allwetter',marina:'Marina',hafen:'Hafen',bucht:'Ankerbucht'};
+function sp(s){return s?String(s).split(/\s+/).filter(Boolean):[];}
+function H(id,name,type,lat,lon,full,part,swell,vhf,tel,note,ver,src,refuge){
+  var prot={};
+  sp(full).forEach(function(d){prot[d]='full';});
+  sp(part).forEach(function(d){prot[d]='part';});
+  return {id:id,name:name,type:type,lat:lat,lon:lon,prot:prot,swellOpen:sp(swell),vhf:vhf,tel:tel,note:note,
+    verified:Object.assign({pos:false,prot:false,vhf:false,tel:false},ver||{}),src:src||null,refuge:refuge!==false};
+}
+var ALL8=DIRS.join(' ');
+var DATA=[
+ H('bonifacio','Bonifacio (Port de plaisance)','aw',41.387,9.160,ALL8,'','SE','9','+33 4 95 73 10 07','Fjord, Check-in VHF 9. Bei starker SE-Dünung Welle im Eingang, innen ruhig.',{vhf:true,tel:true},'Meteoconsult'),
+ H('portovecchio','Porto-Vecchio (Korsika)','marina',41.593,9.285,'N NE E SE S SW W','NW','','16',null,'Langer Golf, sehr guter Schutz.'),
+ H('steresa','Santa Teresa Gallura','hafen',41.238,9.192,'E SE S SW W','NW','N NE','16',null,'Hafen in schmaler Ria, offen nach N: bei N-Dünung Einfahrt schwierig.'),
+ H('portopozzo','Porto Pozzo','hafen',41.205,9.278,'NE E SE S SW W','NW','N','16',null,'Tiefe fjordartige Bucht, offen nur gegen N.'),
+ H('palau','Palau (Porto Turistico)','marina',41.181,9.386,'N NW W SW S','SE','E NE','16',null,'Offen gegen E/NE – abendliche Ostbrise beachten.'),
+ H('calagavetta','Cala Gavetta (La Maddalena Stadt)','marina',41.212,9.405,'N NE NW','W E','S SE SW','9',null,'Südseite der Insel La Maddalena. Teilschutz nach S durch S. Stefano; Strom in der Passage. Schutzsektoren ungeprüft.',{pos:true,vhf:true},'sea-seek'),
+ H('calafrancese','Cala Francese (La Maddalena)','bucht',41.208,9.380,'N NE NW W','','S SE',null,null,'Mistral-Ankerplatz laut v1. Lage und Sektoren ungeprüft.'),
+ H('portomassimo','Porto Massimo (N-Seite La Maddalena)','bucht',41.255,9.425,'S SE SW','','N NE NW',null,null,'Schutz bei Südwind, bei N meiden. Ungeprüft.'),
+ H('cannigione','Cannigione','marina',41.107,9.443,'W NW SW','N S','E NE SE','16',null,'Am Golfende, W-Ufer: Landschutz gegen W/NW (Mistral), Golf öffnet nach E: bei Ostwind/-dünung exponiert. Sektoren aus Lage abgeleitet – in Seekarte bestätigen.',{pos:true},'Meteoconsult'),
+ H('portocervo','Porto Cervo Marina','aw',41.135,9.535,ALL8,'','','16',null,'Tiefer Einschnitt, Allwetter, teuer.'),
+ H('caladivolpe','Cala di Volpe','bucht',41.090,9.545,'N NW W SW','S','E NE',null,null,'Schutz W-Sektor, offen E/NE.'),
+ H('portisco','Portisco','marina',41.033,9.530,'NE E SE S SW W','NW','N','16',null,'Offen gegen N. Ungeprüft.'),
+ H('portorotondo','Porto Rotondo','marina',41.028,9.545,'N NW W SW S','','E','16',null,'Schutz außer gegen E (Einfahrt).'),
+ H('olbia','Olbia – DYC Marina / Molo Brin (Heimathafen)','aw',40.917,9.515,ALL8,'','','16',null,'Allwetter. Lange Einfahrt, Fährverkehr.'),
+ H('golfoaranci','Golfo Aranci','hafen',40.995,9.620,'NW W SW','NE','SE N E','16',null,'Laut sea-seek geschützt vor NE und NW; starker SE = schwere See; N- und E-Stürme = erheblicher Schwell. Fährhafen, sehr belebt.',{prot:true},'sea-seek (Schutz teilweise)'),
+ H('calamoresca','Cala Moresca (Capo Figari)','bucht',40.995,9.640,'','','',null,null,'Schutzsektor unbekannt – nicht als Zuflucht planen. Frühere Angaben waren geometrisch unplausibel und wurden entfernt.',null,null,false),
+ H('spalmatore','Spalmatore di Terra (Tavolara, SW-Seite)','bucht',40.905,9.690,'N NE E','','S SW W',null,null,'Bei Westwechsel sofort raus.'),
+ H('portosanpaolo','Porto San Paolo','hafen',40.875,9.640,'N W SW S','','E NE','16',null,'Klein, offen E/NE-Dünung.'),
+ H('codacavallo','Capo Coda Cavallo (Ankerfeld)','bucht',40.835,9.715,'W SW NW','','E SE',null,null,'Geschützt bei Westwind.'),
+ H('lacaletta','La Caletta (Posada/Siniscola)','hafen',40.613,9.755,'N NW W SW S','','E NE','16',null,'Einfahrt versandet – bei Dünung kritisch.'),
+ H('santalucia','Santa Lucia (Siniscola)','hafen',40.580,9.775,'N NW W SW','','E NE SE','16',null,'Sehr klein, nur bei ruhiger See.'),
+ H('calagonone','Cala Gonone','hafen',40.283,9.636,'NW W SW','S','N NE E SE','16',null,'Unter Steilküste. Bei N–E-Dünung Einfahrt GEFÄHRLICH – nur Schönwetter.'),
+ H('calaluna','Cala Luna','bucht',40.225,9.625,'','W NW','N NE E SE S SW',null,null,'Schönwetter-Ankerplatz. Keine Zuflucht.',null,null,false),
+ H('smnavarrese','Santa Maria Navarrese (Marina di Baunei)','marina',39.992,9.693,'','','','16/74','+39 0782 614198','2,5 sm N von Arbatax, ca. 350 Plätze < 30 m. Achtung: NW/NE-Fallböen im Golf von Tortolì. Schutzsektoren ungeprüft.',{pos:true,vhf:true,tel:true},'sea-seek'),
+ H('arbatax','Marina di Arbatax','aw',39.938,9.703,ALL8,'','','9','+39 0782 667405','Allwetter, Südseite Hafenbecken.',{pos:true,vhf:true,tel:true},'CruisersWiki'),
+ H('frailis','Porto Frailis','bucht',39.930,9.712,'N NW W','NE','SE S SW',null,null,'0,5 sm S Arbatax; bei N-Wind, offen SE–SW.',{prot:true},'CruisersWiki'),
+ H('corallo','Porto Corallo (Villaputzu)','hafen',39.443,9.635,'N NE NW W','','E SE','16',null,'Einfahrt bei E/SE-Dünung kritisch bis unmöglich.'),
+ H('villasimius','Marina di Villasimius','marina',39.122,9.512,'N NE NW W SW','','SE S','9',null,'Offen gegen SE. VHF 9 ungeprüft.'),
+ H('portogiunco','Porto Giunco / Punta Molentis','bucht',39.115,9.525,'N NE NW W','','SE S',null,null,'Bei SE offen.'),
+ H('capitana','Marina di Capitana','marina',39.205,9.305,'N NE NW W','','S SE','16',null,'Offen gegen S/SE-Dünung.'),
+ H('cagliari',"Cagliari (Su Siccu / Sant'Elmo / Marina del Sole)",'aw',39.207,9.125,ALL8,'','','16',null,'Allwetter, Werft, alle Services.'),
+ H('teulada','Porto di Teulada (Budello)','marina',38.925,8.725,'N NE E','','S SW W','16',null,'Klein, offen S/W.')
+];
+
+/* Sections (fallback position, north -> south). gates = which area rules apply. x/y = schematic map only. */
+var SEGMENTS=[
+ {id:'bonifacio',name:'Straße von Bonifacio / Lavezzi',short:'Bonifacio',lat:41.387,lon:9.160,x:168,y:24,gates:['bonifacio'],
+  warn:'Düseneffekt: in der Passage +10–15 kn über Prognose. Bei W/NW (Mistral) und E/SE (Levante) nur im Fenster passieren, Böen beachten.'},
+ {id:'steresa',name:'Santa Teresa / Nordküste',short:'S. Teresa',lat:41.238,lon:9.192,x:176,y:54,gates:['bonifacio']},
+ {id:'maddalena',name:'Palau / La-Maddalena-Archipel',short:'Maddalena',lat:41.212,lon:9.405,x:228,y:82,gates:['bonifacio'],
+  warn:'Verkehrsdichtes Fahrwasser, Fähren! Anker-Restriktionen im Nationalpark – Posidonia-Zonen beachten.'},
+ {id:'arzachena',name:'Cannigione / Golfo di Arzachena',short:'Cannigione',lat:41.107,lon:9.443,x:194,y:108,gates:[],
+  warn:'Golf öffnet nach E: bei Ostwind/-dünung Cannigione unruhig – Mistral-Schutz gut.'},
+ {id:'costasmeralda',name:'Porto Cervo / Costa Smeralda',short:'Porto Cervo',lat:41.135,lon:9.535,x:238,y:132,gates:[]},
+ {id:'cugnana',name:'Portisco / Golfo di Cugnana',short:'Portisco',lat:41.033,lon:9.530,x:216,y:158,gates:[]},
+ {id:'olbia',name:'Olbia / Golfo di Olbia',short:'Olbia',lat:40.917,lon:9.515,x:200,y:183,gates:['orosei'],
+  warn:'Heimathafen (DYC Marina). Allwetter. Lange Einfahrt, Fährverkehr.'},
+ {id:'figari',name:'Golfo Aranci / Capo Figari',short:'Golfo Aranci',lat:40.995,lon:9.620,x:246,y:208,gates:['orosei'],
+  warn:'Golfo Aranci: laut sea-seek geschützt nur vor NW/NE (teilweise); starker SE = schwere See, N- und E-Sturm = erheblicher Schwell. Cala Moresca: Schutzsektor unbekannt – nicht als Zuflucht planen.'},
+ {id:'tavolara',name:'Tavolara / Capo Coda Cavallo',short:'Tavolara',lat:40.905,lon:9.690,x:236,y:238,gates:['orosei']},
+ {id:'posada',name:'Posada / Capo Comino',short:'Posada',lat:40.613,lon:9.755,x:216,y:284,gates:['orosei'],
+  warn:'Ab hier wird die Küste einsam: südlich von Capo Comino lange Strecke ohne wetterfesten Zufluchtsort (Angabe aus v1, Länge ungeprüft).'},
+ {id:'orosei',name:'Golfo di Orosei (Calas)',short:'Golfo di Orosei',lat:40.283,lon:9.636,x:200,y:336,gates:['orosei'],
+  warn:'Sackgasse bei Ostwetter: kein Allwetterhafen im Golf. Bei N–E–SE-Wetter nicht hineinfahren. Cala Gonone ist bei N–E-Dünung gefährlich.'},
+ {id:'ogliastra',name:'Arbatax / S. M. Navarrese',short:'Arbatax',lat:39.938,lon:9.703,x:186,y:390,gates:[],
+  warn:'Arbatax: Allwetterhafen (Daten teilweise geprüft). Santa Maria Navarrese 2,5 sm nördlich: Schutzsektoren unbekannt, NW/NE-Fallböen im Golf von Tortolì.'},
+ {id:'sarrabus',name:'Porto Corallo / Sarrabus',short:'Porto Corallo',lat:39.443,lon:9.635,x:170,y:440,gates:[],
+  warn:'Porto Corallo: Einfahrt bei E/SE-Dünung kritisch bis unmöglich.'},
+ {id:'carbonara',name:'Villasimius / Capo Carbonara',short:'Villasimius',lat:39.122,lon:9.512,x:146,y:482,gates:[]},
+ {id:'cagliari',name:'Cagliari / Südküste',short:'Cagliari',lat:39.207,lon:9.125,x:92,y:508,gates:[]},
+ {id:'teulada',name:'Capo Teulada (Südspitze)',short:'Teulada',lat:38.925,lon:8.725,x:44,y:476,gates:['teulada'],
+  warn:'Militärisches Sperrgebiet Teulada: Durchfahrt nur der freigegebenen Küstenroute, aktuelle NAVTEX-Meldungen beachten. Cala Zafferano / Porto Scudo liegt im Sperrgebiet – keine Zuflucht.'}
+];
+
+/* Rule constants (the Regeln screen is generated from these) */
+var CONST={
+  datenstand:'13.10.2026',
+  reff:{base:[18,23,28],kidsOffset:3,names:['Vollzeug','1. Reff','2. Reff','3. Reff + Zuflucht anlaufen']},
+  courseFactor:{'am Wind':1.15,'halber Wind':1.05,'raum':0.9,'vorm Wind':0.8},
+  courses:['am Wind','halber Wind','raum','vorm Wind'],
+  traffic:{yellow:18,red:28,kidsOffset:3,swellYellow:2,swellRed:3},
+  orosei:{gust:18,swellH:1.5,windDirs:['N','NE','E','SE'],swellDirs:['N','NE','E','SE'],latMin:40.30,latMax:40.95,lonMin:9.45},
+  bonifacio:{gust:18,dirs:['W','NW','E','SE'],plusMin:10,plusMax:15},
+  harborGust:{bucht:[20,25],hafen:[30,38],marina:[30,38],aw:[35,null]},
+  harborSwell:{yellow:0.5,red:1.0},
+  area:{latMin:38.5,latMax:41.8,lonMin:8.2,lonMax:10.2},
+  farNm:25,speed:6
+};
+var EMERGENCY=[
+  {num:'1530',tel:'1530',title:'Guardia Costiera',sub:'Numero Blu · 24 h'},
+  {num:'112',tel:'112',title:'Europanotruf',sub:'Nur mit Mobilfunknetz – auf See oft keins. Primär UKW.'},
+  {num:'118',tel:'118',title:'Medizinischer Notfall Italien',sub:''}
+];
+var DSC_TEXT={head:'UKW-DSC-Distress zuerst',body:'Rote DSC-Distress-Taste 5 Sekunden halten → danach MAYDAY auf CH 16 sprechen.',note:'MMSI muss im Gerät programmiert sein – beim Charter-Check prüfen.'};
+var FUNK=[
+  {k:'Meteomar UKW CH 68',v:'Endlosschleife, Aktualisierung 00/06/12/18 UTC (Round Robin Vela). Ankündigung auf CH 16. Herausgeber Aeronautica Militare mit Marina Militare.',utc:['00:00','06:00','12:00','18:00'],ver:true},
+  {k:'NAVTEX 518 kHz La Maddalena',v:'Kennung R, Sendezeiten 06:50 und 18:50 UTC (mailasail/IHO).',utc:['06:50','18:50'],ver:true},
+  {k:'NAVTEX 490 kHz (italienisch)',v:'Kennung I, Sendezeiten 09:20 und 21:20 UTC.',utc:['09:20','21:20'],ver:false},
+  {k:'Semaphore Pertusato',v:'Live-Wind an der Straße – Kanal ungeprüft, über CH 16 anfragen. Früher genannt: CH 10',badge:'Kanal 10 ungeprüft',ver:false},
+  {k:'Tagesreport im Chat',v:'07:15 / 12:30 / 17:30 (Ortszeit).',ver:true}
+];
+var MAYDAY=[
+  'MAYDAY MAYDAY MAYDAY',
+  'Hier ist {name}, {name}, {name}, Rufzeichen {call}, MMSI {mmsi}',
+  'MAYDAY {name}',
+  'Position …',
+  'Art der Not …',
+  'Benötigte Hilfe …',
+  'Personen an Bord: {pers}',
+  'Weitere Infos …',
+  'OVER'
+];
+
+/* =====================================================================
+   PURE LOGIC (exposed on window.SKIPPER for tests)
+   ===================================================================== */
+function toRad(x){return x*Math.PI/180;}
+function haversineNm(a,b){
+  var R=3440.065,dLat=toRad(b.lat-a.lat),dLon=toRad(b.lon-a.lon);
+  var h=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(toRad(a.lat))*Math.cos(toRad(b.lat))*Math.sin(dLon/2)*Math.sin(dLon/2);
+  return 2*R*Math.asin(Math.min(1,Math.sqrt(h)));
+}
+function bearingDeg(a,b){
+  var p1=toRad(a.lat),p2=toRad(b.lat),dl=toRad(b.lon-a.lon);
+  var y=Math.sin(dl)*Math.cos(p2),x=Math.cos(p1)*Math.sin(p2)-Math.sin(p1)*Math.cos(p2)*Math.cos(dl);
+  return (Math.round(Math.atan2(y,x)*180/Math.PI)+360)%360;
+}
+function formatDM(v,isLat){
+  var hemi=isLat?(v>=0?'N':'S'):(v>=0?'E':'W');
+  var t=Math.round(Math.abs(v)*600),deg=Math.floor(t/600),min=(t%600)/10;
+  var dd=String(deg);while(dd.length<(isLat?2:3))dd='0'+dd;
+  var mm=min.toFixed(1).replace('.',',');if(mm.length<4)mm='0'+mm;
+  return dd+'°'+mm+'′ '+hemi;
+}
+function formatPos(p){return formatDM(p.lat,true)+' '+formatDM(p.lon,false);}
+function parseDM(deg,min){
+  var d=parseFloat(String(deg).replace(',','.')),m=parseFloat(String(min===''||min==null?'0':min).replace(',','.'));
+  if(!isFinite(d)||!isFinite(m)||d<0||m<0||m>=60||String(deg).trim()==='')return NaN;
+  return d+m/60;
+}
+function isOutOfArea(p){var a=CONST.area;return !(p.lat>=a.latMin&&p.lat<=a.latMax&&p.lon>=a.lonMin&&p.lon<=a.lonMax);}
+function nm1(x){return x.toFixed(1).replace('.',',');}
+function fmtEta(h){var m=Math.round(h*60),hh=Math.floor(m/60),mm=m%60;return (hh>0?hh+' h ':'')+(mm<10&&hh>0?'0':'')+mm+' min';}
+
+/* EU summer time: last Sunday March 01:00 UTC .. last Sunday October 01:00 UTC */
+function lastSundayUTC(y,m){var d=new Date(Date.UTC(y,m+1,0,1,0,0));d.setUTCDate(d.getUTCDate()-d.getUTCDay());return d.getTime();}
+function euOffset(ms){var y=new Date(ms).getUTCFullYear();return (ms>=lastSundayUTC(y,2)&&ms<lastSundayUTC(y,9))?2:1;}
+function utcToLocal(hhmm,ms){
+  var p=hhmm.split(':'),off=euOffset(ms),t=((+p[0])*60+(+p[1])+off*60)%1440;
+  var h=Math.floor(t/60),m=t%60;
+  return {text:(h<10?'0':'')+h+':'+(m<10?'0':'')+m,label:off===2?'CEST':'CET',offset:off};
+}
+function localClock(ms){ // wall clock by EU rule, independent of device time zone
+  var off=euOffset(ms),d=new Date(ms+off*3600000);
+  function z(n){return (n<10?'0':'')+n;}
+  return z(d.getUTCHours())+':'+z(d.getUTCMinutes())+':'+z(d.getUTCSeconds())+' '+(off===2?'CEST':'CET');
+}
+function utcClock(ms){var d=new Date(ms);function z(n){return (n<10?'0':'')+n;}return z(d.getUTCHours())+':'+z(d.getUTCMinutes())+':'+z(d.getUTCSeconds())+' UTC';}
+
+function normalize(raw){
+  var s=Object.assign({},raw||{});
+  s.kids=(s.kids===undefined||s.kids===null)?true:!!s.kids;
+  s.trend=!!s.trend;
+  s.course=CONST.courseFactor[s.course]?s.course:'am Wind';
+  s.dir=DIRS.indexOf(s.dir)>=0?s.dir:null;
+  s.swellDir=DIRS.indexOf(s.swellDir)>=0?s.swellDir:null;
+  var sh=Number(s.swellH);s.swellH=isFinite(sh)?Math.min(4,Math.max(0,Math.round(sh*2)/2)):0;
+  s.windTrue=(s.windTrue===null||s.windTrue===undefined||s.windTrue==='')?null:Number(s.windTrue);
+  s.gust=(s.gust===null||s.gust===undefined||s.gust==='')?null:Number(s.gust);
+  if(s.windTrue!==null&&!isFinite(s.windTrue))s.windTrue=null;
+  if(s.gust!==null&&!isFinite(s.gust))s.gust=null;
+  s.gustFixed=false;
+  if(s.windTrue!==null&&s.gust!==null&&s.gust<s.windTrue){s.gust=s.windTrue;s.gustFixed=true;}
+  var sd=Number(s.speed);s.speed=(isFinite(sd)&&sd>0)?sd:CONST.speed;
+  return s;
+}
+function apparentWind(gust,course){
+  var f=CONST.courseFactor[course]||CONST.courseFactor['am Wind'];
+  return Math.ceil(gust*f-1e-9); // round up = conservative, and keeps the shown number consistent with the threshold used
+}
+function reffThresholds(kids){var o=kids?CONST.reff.kidsOffset:0;return CONST.reff.base.map(function(x){return x-o;});}
+function reffLevel(apparent,kids){
+  var t=reffThresholds(kids),i=apparent>=t[2]?3:apparent>=t[1]?2:apparent>=t[0]?1:0;
+  return {idx:i,name:CONST.reff.names[i],level:i===0?'g':i===3?'r':'y',thresholds:t};
+}
+function reffStufe(state){
+  var s=normalize(state);
+  if(s.gust===null)return null;
+  var a=apparentWind(s.gust,s.course),r=reffLevel(a,s.kids);
+  return {apparent:a,idx:r.idx,name:r.name,level:r.level,thresholds:r.thresholds,course:s.course,kids:s.kids};
+}
+function nearestSegment(p){
+  var best=null,bd=1e9;
+  SEGMENTS.forEach(function(sg){var d=haversineNm(p,sg);if(d<bd){bd=d;best=sg;}});
+  return best;
+}
+function sectionOf(pos){
+  if(!pos)return null;
+  if(pos.segId){for(var i=0;i<SEGMENTS.length;i++)if(SEGMENTS[i].id===pos.segId)return SEGMENTS[i];}
+  return nearestSegment(pos);
+}
+var RANK={g:1,y:2,r:3};
+function worst(a,b){return (RANK[b]||0)>(RANK[a]||0)?b:a;}
+
+function generalLevel(s){
+  if(s.gust===null)return null;
+  var T=CONST.traffic,off=s.kids?T.kidsOffset:0,y=T.yellow-off,r=T.red-off,lvl='g',txt,title;
+  var reff=reffLevel(apparentWind(s.gust,s.course),s.kids);
+  if(s.gust>=r){lvl='r';title='NICHT EMPFOHLEN – ZUFLUCHT ANLAUFEN';txt='Böen '+s.gust+' kn (wahr) ≥ '+r+' kn'+(s.kids?' (Kinder an Bord)':'')+'. Nicht mehr auf offener See sein – nächsten geschützten Platz aus der Liste anlaufen.';}
+  else if(s.gust>=y){lvl='y';title='FAHRBAR MIT EINSCHRÄNKUNG';txt='Böen '+s.gust+' kn (wahr), Schwelle '+y+'–'+(r-1)+' kn'+(s.kids?' (Kinder an Bord)':'')+'. Segelführung: '+reff.name+'. Ausweichplatz vor Etappenbeginn festlegen, Crew briefen.';}
+  else{title='FAHRBAR';txt='Böen '+s.gust+' kn (wahr) unter '+y+' kn'+(s.kids?' (Kinder an Bord)':'')+'.';}
+  var why=[];
+  if(s.swellH>=T.swellRed){lvl='r';why.push('Dünung '+nmDec(s.swellH)+' m ≥ '+T.swellRed+' m');title='NICHT EMPFOHLEN – ZUFLUCHT ANLAUFEN';}
+  else if(s.swellH>=T.swellYellow){if(lvl==='g'){lvl='y';title='FAHRBAR MIT EINSCHRÄNKUNG';}why.push('Dünung '+nmDec(s.swellH)+' m ≥ '+T.swellYellow+' m');}
+  if(why.length)txt+=' Zusätzlich: '+why.join(', ')+'.';
+  return {level:lvl,title:title,text:txt};
+}
+function nmDec(x){return x.toFixed(1).replace('.',',');}
+
+function gates(s,sec,pos){
+  var out=[],info=[];
+  if(!sec)return {gates:out,info:info};
+  var G=sec.gates||[];
+  if(s.gust===null)return {gates:out,info:info};
+  if(G.indexOf('teulada')>=0){
+    info.push({id:'teulada',level:'i',title:'SPERRGEBIET TEULADA',text:'Militärisches Sperrgebiet / NAVTEX-Meldungen beachten (518 kHz La Maddalena, CH 16). Cala Zafferano / Porto Scudo ist keine Zuflucht.'});
+  }
+  var O=CONST.orosei;
+  var inOroseiArea=G.indexOf('orosei')>=0||(pos&&pos.lat>=O.latMin&&pos.lat<=O.latMax&&pos.lon>=O.lonMin);
+  if(inOroseiArea&&s.dir){
+    var gl=s.kids?O.gust-CONST.traffic.kidsOffset:O.gust;
+    var windHit=O.windDirs.indexOf(s.dir)>=0&&s.gust>=gl;
+    var swellHit=s.swellDir&&O.swellDirs.indexOf(s.swellDir)>=0&&s.swellH>=O.swellH;
+    if(windHit||swellHit){
+      var why=[];
+      if(windHit)why.push('Wind aus '+s.dir+', Böen '+s.gust+' kn ≥ '+gl+' kn'+(s.kids?' (Kinder)':''));
+      if(swellHit)why.push('Dünung aus '+s.swellDir+' '+nmDec(s.swellH)+' m ≥ '+nmDec(O.swellH)+' m');
+      var inGulf=sec.id==='orosei';
+      out.push({id:'orosei',level:'r',
+        title:inGulf?'OROSEI-GATE: ABLAUFEN NACH ARBATAX / S. M. NAVARRESE':'NICHT NACH SÜDEN IN DEN GOLFO DI OROSEI',
+        text:inGulf?'Ablaufen nach Arbatax/S. M. Navarrese (See von achtern) oder zurück Olbia nur mit Fenster. Auslöser: '+why.join('; ')+'.'
+          :'Im Hafen warten (Olbia/Porto Cervo) – nicht nach Süden fahren. Im Golf gibt es keinen Allwetterhafen. Auslöser: '+why.join('; ')+'.'});
+    }
+  }
+  if(G.indexOf('bonifacio')>=0&&s.dir&&CONST.bonifacio.dirs.indexOf(s.dir)>=0){
+    var B=CONST.bonifacio,bl=B.gust,name=(s.dir==='W'||s.dir==='NW')?'Mistral':'Levante';
+    if(s.gust>=bl){
+      out.push({id:'bonifacio',level:'r',title:'DÜSE STRASSE VON BONIFACIO ('+name.toUpperCase()+')',
+        text:'Düse Straße von Bonifacio ('+name+'): in der Passage +'+B.plusMin+'–'+B.plusMax+' kn über Prognose erwarten → effektiv '+(s.gust+B.plusMin)+'–'+(s.gust+B.plusMax)+' kn. Auslöser: Wind aus '+s.dir+', Böen '+s.gust+' kn ≥ '+bl+' kn.'});
+    }else if(s.kids&&s.gust>=bl-CONST.traffic.kidsOffset){
+      out.push({id:'bonifacio',level:'y',title:'DÜSE STRASSE VON BONIFACIO ('+name.toUpperCase()+') – VORSICHT',
+        text:'Mit Kindern an Bord schon ab '+(bl-CONST.traffic.kidsOffset)+' kn Böen vorsichtig: in der Passage +'+B.plusMin+'–'+B.plusMax+' kn über Prognose möglich → '+(s.gust+B.plusMin)+'–'+(s.gust+B.plusMax)+' kn.'});
+    }
+  }
+  if(s.trend){
+    out.push({id:'trend',level:'y',title:'WINDDREHUNG / FRONT ERWARTET',text:'Ankerplatz muss auch bei gedrehtem Wind halten – nur Plätze mit Schutz in beiden Richtungen oder Hafen.'});
+  }
+  return {gates:out,info:info};
+}
+
+function protCount(h){return Object.keys(h.prot).length;}
+function harborStatus(h,state){
+  var s=normalize(state),items=[],unverified=!h.verified.prot;
+  function add(level,text){items.push({level:level,text:text});}
+  if(h.refuge===false)add('n','keine Zuflucht (Schönwetter-/Ankerplatz, nicht als Zuflucht planen)');
+  var unknown=protCount(h)===0;
+  if(unknown)add('n','Schutz unbekannt – nicht einplanen');
+  if(h.refuge===false||unknown){
+    return {level:'n',reasons:items.map(function(i){return i.text;}),items:items,unverified:unverified};
+  }
+  if(!s.dir){
+    add('n','Windrichtung wählen');
+    return {level:'n',reasons:items.map(function(i){return i.text;}),items:items,unverified:unverified};
+  }
+  var p=h.prot[s.dir];
+  if(p==='full')add('g','geschützt bei Wind aus '+s.dir);
+  else if(p==='part')add('y','nur eingeschränkt geschützt bei Wind aus '+s.dir+' (Schwell/Böen möglich)');
+  else add('r','offen gegen Wind aus '+s.dir);
+  var HS=CONST.harborSwell;
+  if(s.swellDir&&h.swellOpen.indexOf(s.swellDir)>=0){
+    if(s.swellH>=HS.red)add('r','Einfahrt/Liegeplatz bei Schwell aus '+s.swellDir+' gefährlich ('+nmDec(s.swellH)+' m)');
+    else if(s.swellH>=HS.yellow)add('y','Schwell aus '+s.swellDir+' ('+nmDec(s.swellH)+' m): Einfahrt/Liegeplatz unruhig bis kritisch');
+  }
+  if(s.gust!==null){
+    var lim=CONST.harborGust[h.type];
+    if(lim){
+      if(lim[1]!==null&&s.gust>=lim[1])add('r','Böen '+s.gust+' kn ≥ '+lim[1]+' kn: für '+TYPE_LABEL[h.type]+' zu viel');
+      else if(s.gust>=lim[0]){
+        add('y',h.type==='aw'?'Ansteuerung/Manöver bei Starkwind kritisch (Böen '+s.gust+' kn)':'Böen '+s.gust+' kn ≥ '+lim[0]+' kn: für '+TYPE_LABEL[h.type]+' grenzwertig');
+      }
+    }
+  }
+  if(s.trend&&h.type==='bucht')add('y','Winddrehung erwartet: Ankerbucht prüfen');
+  var lvl='g';items.forEach(function(i){if(i.level==='y'||i.level==='r')lvl=worst(lvl,i.level);});
+  // worst reason first
+  items.sort(function(a,b){return (RANK[b.level]||0)-(RANK[a.level]||0);});
+  if(lvl==='g'&&unverified)items.push({level:'g',text:'Sektoren ungeprüft'});
+  return {level:lvl,reasons:items.map(function(i){return i.text;}),items:items,unverified:unverified};
+}
+
+function rank(state){
+  var s=normalize(state);
+  if(!s.pos)return [];
+  var list=DATA.map(function(h){
+    var d=haversineNm(s.pos,h);
+    return {h:h,status:harborStatus(h,s),dist:Math.round(d*10)/10,brg:bearingDeg(s.pos,h),eta:d/s.speed};
+  });
+  list.sort(function(a,b){return a.dist-b.dist;});
+  return list;
+}
+function recommend(list){
+  var green=null,aw=null,anyAw=null;
+  list.forEach(function(it){
+    if(it.status.level==='g'&&!green)green=it;
+    if(it.status.level==='g'&&it.h.type==='aw'&&!aw)aw=it;
+    if(it.h.type==='aw'&&!anyAw&&it.status.level!=='r')anyAw=it;
+  });
+  var far=!green||green.dist>=CONST.farNm;
+  return {green:green,aw:(aw&&(!green||aw.h.id!==green.h.id))?aw:null,far:far,fallbackAw:far?(aw||anyAw):null};
+}
+
+function evaluate(raw){
+  var s=normalize(raw),res={state:s,missing:[],gates:[],info:[],general:null,reff:null,overall:null,section:null,outOfArea:false,list:[],rec:null};
+  if(!s.pos)res.missing.push('Position');
+  if(!s.dir)res.missing.push('Windrichtung');
+  if(s.windTrue===null)res.missing.push('Wind');
+  if(s.gust===null)res.missing.push('Böen');
+  res.section=sectionOf(s.pos);
+  if(s.pos)res.outOfArea=isOutOfArea(s.pos);
+  res.reff=reffStufe(s);
+  res.general=generalLevel(s);
+  var g=gates(s,res.section,s.pos);
+  res.gates=g.gates;res.info=g.info;
+  var cands=res.gates.concat(res.general?[res.general]:[]);
+  var best=null;
+  cands.forEach(function(c){if(!best||RANK[c.level]>RANK[best.level])best=c;});
+  res.overall=best;
+  if(s.pos){res.list=rank(s);res.rec=recommend(res.list);}
+  return res;
+}
+
+/* =====================================================================
+   UI STATE
+   ===================================================================== */
+var S={pos:null,dir:null,windTrue:null,gust:null,swellDir:null,swellH:0,kids:true,trend:false,course:'am Wind',speed:CONST.speed,filter:true};
+var SYM={g:'✔',y:'⚠',r:'✖',n:'?',i:'ℹ'};
+var ST_LABEL={g:'geschützt',y:'eingeschränkt',r:'nicht geeignet',n:'unbekannt'};
+function $(id){return document.getElementById(id);}
+function esc(t){return String(t).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function store(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+function load(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+
+/* ---- compass rose ---- */
+function polar(r,deg){var a=(deg-90)*Math.PI/180;return [r*Math.cos(a),r*Math.sin(a)];}
+function wedge(deg,r){var p0=polar(r,deg-21),p1=polar(r,deg+21);return 'M0 0 L'+p0[0].toFixed(1)+' '+p0[1].toFixed(1)+' A'+r+' '+r+' 0 0 1 '+p1[0].toFixed(1)+' '+p1[1].toFixed(1)+' Z';}
+function roseSVG(h,s){
+  var o='<svg class="rose" viewBox="-52 -52 104 104" role="img" aria-label="Schutzsektoren-Rose">';
+  var unknown=protCount(h)===0;
+  DIRS.forEach(function(d,i){
+    var lv=h.prot[d],deg=i*45;
+    if(lv==='full')o+='<path d="'+wedge(deg,32)+'" style="fill:var(--rose-full);stroke:var(--rose-full)" stroke-width="1"/>';
+    else if(lv==='part')o+='<path d="'+wedge(deg,32)+'" style="fill:url(#hatch);stroke:var(--rose-full)" stroke-width="1"/>';
+    else o+='<path d="'+wedge(deg,32)+'" style="fill:none;stroke:var(--rose-line)" stroke-width="1"'+(unknown?' stroke-dasharray="2 2"':'')+'/>';
+  });
+  h.swellOpen.forEach(function(d){var p=polar(42,DIRS.indexOf(d)*45);o+='<text x="'+p[0].toFixed(1)+'" y="'+(p[1]+4).toFixed(1)+'" text-anchor="middle" font-size="12" font-weight="700" style="fill:var(--swell)">≈</text>';});
+  if(s&&s.swellDir&&s.swellH>0){var q=polar(42,DIRS.indexOf(s.swellDir)*45);o+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="8" fill="none" style="stroke:var(--swell)" stroke-width="2"/>';}
+  if(s&&s.dir){
+    var di=DIRS.indexOf(s.dir)*45,t=polar(50,di),hd=polar(13,di),b1=polar(25,di-9),b2=polar(25,di+9);
+    o+='<line x1="'+t[0].toFixed(1)+'" y1="'+t[1].toFixed(1)+'" x2="'+hd[0].toFixed(1)+'" y2="'+hd[1].toFixed(1)+'" style="stroke:var(--wind)" stroke-width="3.5" stroke-linecap="round"/>';
+    o+='<polygon points="'+hd[0].toFixed(1)+','+hd[1].toFixed(1)+' '+b1[0].toFixed(1)+','+b1[1].toFixed(1)+' '+b2[0].toFixed(1)+','+b2[1].toFixed(1)+'" style="fill:var(--wind);stroke:var(--card)" stroke-width="1"/>';
+  }
+  o+='<text x="0" y="-36.5" text-anchor="middle" font-size="9" font-weight="800" style="fill:var(--ink)">N</text>';
+  return o+'</svg>';
+}
+function sectorText(h){
+  if(protCount(h)===0)return '<b>Schutzsektoren: unbekannt</b>';
+  var full=[],part=[],open=[];
+  DIRS.forEach(function(d){var l=h.prot[d];(l==='full'?full:l==='part'?part:open).push(d);});
+  return (full.length?'<b>geschützt:</b> '+full.join(' ')+' ':'')+(part.length?'· <b>teils:</b> '+part.join(' ')+' ':'')+(open.length?'· <b>offen:</b> '+open.join(' '):'');
+}
+function verBadges(h){
+  var v=h.verified,o=[];
+  function b(ok,l){o.push('<span class="badge '+(ok?'ver':'unv')+'">'+(ok?'✔ ':'')+l+(ok?'':' ungeprüft')+'</span>');}
+  b(v.pos,'Lage');b(v.prot,'Schutz');b(v.vhf,'VHF');if(h.tel||v.tel)b(v.tel,'Tel');
+  return o.join(' ');
+}
+function harborCard(it,s,opts){
+  var h=it.h,st=it.status,lv=st.level;
+  var head='<div><div class="hname">'+esc(h.name)+' <span class="badge'+(h.type==='aw'?' dark':'')+'">'+TYPE_LABEL[h.type]+'</span></div>';
+  head+='<span class="chip c-'+lv+'">'+SYM[lv]+' '+ST_LABEL[lv]+'</span>';
+  if(it.dist!==undefined)head+=' <span class="hmeta"><b>≈ '+nm1(it.dist)+' sm Luftlinie</b> · Seeweg länger'+(it.dist>=0.1?' · rwK '+it.brg+'° · ≥ '+fmtEta(it.eta)+' bei '+s.speed+' kn':' · am Platz')+'</span>';
+  head+='</div>';
+  var reasons='<ul class="reasons">'+st.items.map(function(r){return '<li>'+SYM[r.level]+' '+esc(r.text)+'</li>';}).join('')+'</ul>';
+  var vhf=h.vhf?'VHF '+esc(h.vhf)+(h.verified.vhf?' <span class="badge ver">✔ geprüft</span>':' <span class="badge unv">ungeprüft</span>'):'VHF: unbekannt – VHF 16 / Revierführer';
+  var tel=h.tel?esc(h.tel)+(h.verified.tel?' <span class="badge ver">✔ geprüft</span>':' <span class="badge unv">ungeprüft</span>'):'Tel.: unbekannt';
+  var body='<div class="hwide"><div class="sectors">'+sectorText(h)+(h.swellOpen.length?' · <span style="color:var(--swell)"><b>≈ Schwell gefährlich aus:</b></span> '+h.swellOpen.join(' '):'')+'</div>';
+  body+='<div class="hmeta" style="margin-top:4px">'+vhf+' · '+tel+'</div>';
+  body+='<div class="hmeta" style="margin-top:4px">'+esc(h.note)+'</div>';
+  body+='<div style="margin-top:5px">'+verBadges(h)+(h.src?' <span class="hmeta">Quelle: '+esc(h.src)+'</span>':'')+'</div></div>';
+  return '<div class="hcard lv-'+lv+'">'+head+'<div class="hside">'+roseSVG(h,s)+'</div>'+'<div>'+reasons+'</div>'+body+'</div>';
+}
+
+/* ---- header / position ---- */
+function ageText(t){
+  var m=Math.floor((Date.now()-t)/60000);
+  if(m<1)return 'gerade eben';
+  if(m<60)return 'vor '+m+' min';
+  return 'vor '+Math.floor(m/60)+' h '+(m%60)+' min';
+}
+function renderPosline(){
+  var el=$('posline'),p=S.pos;
+  el.className='posline';
+  if(!p){el.textContent='Position: nicht gewählt';return;}
+  var t;
+  if(p.src==='segment'){var sg=sectionOf(p);t='Abschnitt (Näherung): '+sg.name;}
+  else{
+    t=(p.src==='gps'?'GPS ':'Manuell ')+ageText(p.t)+' · '+formatPos(p);
+    if(p.src==='gps'&&Date.now()-p.t>10*60000)t+=' · veraltet?';
+  }
+  if(isOutOfArea(p)){t+=' · ⚠ außerhalb des Törngebiets';el.className='posline warn';}
+  el.textContent=t;
+}
+function renderChip(res){
+  var el=$('overallchip'),o=res.overall;
+  if(!o||res.missing.length){
+    var m=res.missing.length?res.missing.join(', ')+' fehlt':'';
+    if(o&&res.missing.length&&res.general){ /* partial: show what we have, say what is missing */ }
+    else{el.className='chip-head c-n';el.innerHTML='<span>?</span><span>Noch keine vollständige Bewertung – '+esc(m||'Eingaben prüfen')+'</span>';return;}
+  }
+  el.className='chip-head c-'+o.level;
+  el.innerHTML='<span>'+SYM[o.level]+'</span><span>'+esc(o.title)+(res.missing.length?' (unvollständig: '+esc(res.missing.join(', '))+' fehlt)':'')+'</span>';
+}
+
+/* ---- Lage: result ---- */
+function banner(level,title,text){return '<div class="banner b-'+level+'"><div class="bt"><span class="sym">'+SYM[level]+'</span>'+esc(title)+'</div><div class="bd">'+esc(text)+'</div></div>';}
+function renderResult(res){
+  var s=res.state,el=$('result'),h='';
+  if(res.outOfArea)h+=banner('y','Außerhalb des Törngebiets','Position liegt außerhalb lat 38,5–41,8 / lon 8,2–10,2. Bewertung und Zufluchtsdaten gelten nur für das Törngebiet – Eingabe prüfen.');
+  if(res.missing.length)h+='<div class="notice">Für die vollständige Bewertung fehlt: <b>'+esc(res.missing.join(', '))+'</b>.</div>';
+  if(res.overall&&!res.missing.length)h+=banner(res.overall.level,res.overall.title,res.overall.text);
+  res.gates.forEach(function(g){if(g!==res.overall||res.missing.length)h+=banner(g.level,g.title,g.text);});
+  if(res.general&&res.general!==res.overall&&!(res.missing.length===0))h+='';
+  if(res.general&&res.overall!==res.general)h+=banner(res.general.level,'Unterwegs: '+res.general.title,res.general.text);
+  if(res.general&&res.missing.length&&res.overall===res.general)h+=banner(res.general.level,res.general.title,res.general.text+' (vorläufig – Eingaben unvollständig)');
+  res.info.forEach(function(i){h+=banner('i',i.title,i.text);});
+  if(res.section&&res.section.warn)h+='<div class="segwarn"><b>Revier-Hinweis · '+esc(res.section.name)+':</b> '+esc(res.section.warn)+'</div>';
+  if(res.reff){
+    h+='<div class="card"><div class="t">Segelführung</div><div class="reffnum">'+esc(res.reff.name)+'</div>'
+      +'<div class="note">scheinbar ≈ '+res.reff.apparent+' kn (Näherung: Böen '+s.gust+' kn × '+CONST.courseFactor[s.course]+' „'+s.course+'“)'+(s.kids?' · Kinder an Bord: Schwellen '+res.reff.thresholds.join('/')+' kn':' · Schwellen '+res.reff.thresholds.join('/')+' kn')+'</div></div>';
+  }
+  if(!s.swellDir)h+='<div class="note small">Dünung: keine/unbekannt – die Bewertung berücksichtigt dann keine Dünung. Bei Seegang bitte eingeben.</div>';
+  if(res.rec&&s.dir&&s.gust!==null){
+    var r=res.rec;
+    h+='<h2>Ausweichen von hier</h2>';
+    if(r.far){
+      var fa=r.fallbackAw;
+      h+=banner('r','Kein geschützter Platz in Reichweite','Kein grüner Platz unter '+CONST.farNm+' sm Luftlinie'+(fa?' – Allwetterhafen '+fa.h.name+' ansteuern (≈ '+nm1(fa.dist)+' sm, rwK '+fa.brg+'°).':'.'));
+    }
+    if(r.green)h+='<div class="rec"><div class="rt">✔ Nächster geschützter Platz</div>'+harborCard(r.green,s)+'</div>';
+    if(r.aw)h+='<div class="rec"><div class="rt">✔ Nächster geschützter Allwetterhafen</div>'+harborCard(r.aw,s)+'</div>';
+    if(r.far&&r.fallbackAw&&!(r.green&&r.fallbackAw.h.id===r.green.h.id)&&!(r.aw&&r.fallbackAw.h.id===r.aw.h.id))h+='<div class="rec" style="border-color:var(--r)"><div class="rt">⚠ Allwetterhafen als Rückfall</div>'+harborCard(r.fallbackAw,s)+'</div>';
+    h+='<button class="btn sm" id="goz" style="margin-top:10px">Alle Ausweichplätze ansehen →</button>';
+  }
+  h+='<div class="note small" style="margin-top:14px">'+esc(DISCLAIMER)+'</div>';
+  el.innerHTML=h;
+  var g=$('goz');if(g)g.addEventListener('click',function(){showScreen('scr-zuflucht');});
+}
+
+/* ---- Zuflucht ---- */
+function renderZuflucht(res){
+  var s=res.state,info=[];
+  if(!s.pos)info.push('Position fehlt (Entfernungen)');
+  if(!s.dir)info.push('Windrichtung fehlt (Status)');
+  $('zinfo').innerHTML=info.length?'<b>Unvollständig:</b> '+esc(info.join(', '))+'. Ohne diese Angaben ist die Liste Nord→Süd sortiert und ohne Ampel.':
+    'Sortiert nach Entfernung (Luftlinie, Seeweg ist länger). Fahrtzeit = Mindestzeit bei '+s.speed+' kn.';
+  var list=s.pos?res.list:DATA.slice().sort(function(a,b){return b.lat-a.lat;}).map(function(h){return {h:h,status:harborStatus(h,s)};});
+  var hidden=0;
+  if(S.filter&&s.dir){list=list.filter(function(it){var ok=it.status.level==='g'||it.status.level==='y';if(!ok)hidden++;return ok;});}
+  var o='';
+  list.forEach(function(it){o+=harborCard(it,s);});
+  if(hidden)o+='<div class="note">'+hidden+' Plätze ausgeblendet (rot oder ungeprüft/unbekannt/keine Zuflucht). Filter oben ausschalten, um alle zu sehen.</div>';
+  if(!list.length)o+='<div class="banner b-r"><div class="bt"><span class="sym">✖</span>Kein geeigneter Platz</div><div class="bd">Mit den eingegebenen Bedingungen ist kein Platz grün oder gelb. Filter ausschalten, um alle zu sehen.</div></div>';
+  o+='<div class="legend"><b>Rose:</b> dunkel = geschützt · schraffiert = eingeschränkt · leer = offen · gestrichelt = unbekannt · Pfeil = Wind · ≈ = Schwell gefährlich (Kreis = aktuelle Dünung).</div>';
+  o+='<div class="note small">'+esc(DISCLAIMER)+'</div>';
+  $('zlist').innerHTML=o;
+  $('speedval').textContent=S.speed;
+  var f=$('filtertog');f.setAttribute('aria-pressed',S.filter?'true':'false');f.textContent=S.filter?'nur grün/gelb':'alle zeigen';
+}
+
+/* ---- map ---- */
+function renderMap(){
+  var svg=$('coastmap'),sel=S.pos&&S.pos.src==='segment'?S.pos.segId:null,near=(S.pos&&S.pos.src!=='segment')?sectionOf(S.pos):null;
+  var pts=SEGMENTS.map(function(s){return s.x+','+s.y;}).join(' ');
+  var h='<polyline points="'+pts+'" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="2" stroke-dasharray="5 5"/>';
+  h+='<text x="140" y="11" fill="#7c8199" font-size="10" letter-spacing="2">KORSIKA ↑</text>';
+  SEGMENTS.forEach(function(s){
+    var c=(sel===s.id?'sel':'')+(near&&near.id===s.id?' near':''),right=s.x>205,tx=right?s.x-15:s.x+15;
+    h+='<g class="segdot '+c+'" data-id="'+s.id+'" role="button" aria-label="'+esc(s.name)+'"><circle class="hit" cx="'+s.x+'" cy="'+s.y+'" r="18"/><circle class="halo" cx="'+s.x+'" cy="'+s.y+'" r="12"/><circle class="core" cx="'+s.x+'" cy="'+s.y+'" r="6"/><text x="'+tx+'" y="'+(s.y+4)+'" text-anchor="'+(right?'end':'start')+'">'+esc(s.short)+'</text></g>';
+  });
+  svg.innerHTML=h;
+}
+
+/* ---- static / inputs ---- */
+function buildInputs(){
+  $('dirgrid').innerHTML=DIRS.map(function(d){return '<button class="tog" data-dir="'+d+'" aria-pressed="false">'+d+'</button>';}).join('');
+  $('swelldirgrid').innerHTML=DIRS.map(function(d){return '<button class="tog" data-sdir="'+d+'" aria-pressed="false">'+d+'</button>';}).join('')+'<button class="tog span4" data-sdir="" aria-pressed="true">keine / unbekannt</button>';
+  $('coursegrid').innerHTML=CONST.courses.map(function(c){return '<button class="tog" data-course="'+c+'" aria-pressed="false" style="font-size:.9rem">'+c+'</button>';}).join('');
+  var sel=$('segselect');
+  SEGMENTS.forEach(function(s){var o=document.createElement('option');o.value=s.id;o.textContent=s.name;sel.appendChild(o);});
+}
+function syncInputs(){
+  var s=normalize(S);
+  document.querySelectorAll('[data-dir]').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.dir===S.dir?'true':'false');});
+  document.querySelectorAll('[data-sdir]').forEach(function(b){b.setAttribute('aria-pressed',(b.dataset.sdir||null)===S.swellDir?'true':'false');});
+  document.querySelectorAll('[data-course]').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.course===S.course?'true':'false');});
+  $('windval').innerHTML=S.windTrue===null?'–':S.windTrue+' <small>kn</small>';
+  $('gustval').innerHTML=S.gust===null?'–':S.gust+' <small>kn</small>';
+  $('swellval').innerHTML=nmDec(S.swellH)+' <small>m</small>';
+  $('kids').checked=S.kids;$('trend').checked=S.trend;
+  $('segselect').value=(S.pos&&S.pos.src==='segment')?S.pos.segId:'';
+}
+var notice='';
+function setNotice(t){notice=t;var n=$('gustnotice');n.style.display=t?'block':'none';n.textContent=t;}
+function step(k,d){
+  if(k==='windTrue'||k==='gust'){
+    if(S[k]===null){S[k]=(k==='windTrue')?10:Math.max(15,S.windTrue===null?0:S.windTrue);if(k==='gust'&&S.windTrue===null)S.windTrue=10;}
+    else S[k]=Math.min(80,Math.max(0,S[k]+d));
+    if(S.windTrue!==null&&S.gust===null&&k==='windTrue'){S.gust=S.windTrue;setNotice('Böen auf Mittelwind gesetzt – bitte Böen eingeben.');}
+    else if(S.windTrue!==null&&S.gust!==null&&S.gust<S.windTrue){
+      S.gust=S.windTrue;setNotice('Böen können nicht unter dem Mittelwind liegen – auf '+S.windTrue+' kn angehoben.');
+    }else setNotice('');
+  }else if(k==='swellH'){S.swellH=Math.min(4,Math.max(0,Math.round((S.swellH+d)*2)/2));}
+  else if(k==='speed'){S.speed=Math.min(30,Math.max(1,S.speed+d));}
+  update();
+}
+function bindStepper(btn){
+  var t1=null,t2=null;
+  function fire(){step(btn.dataset.k,parseFloat(btn.dataset.d));}
+  function stop(){clearTimeout(t1);clearInterval(t2);t1=t2=null;}
+  btn.addEventListener('pointerdown',function(e){e.preventDefault();fire();stop();t1=setTimeout(function(){t2=setInterval(fire,70);},420);});
+  ['pointerup','pointerleave','pointercancel'].forEach(function(ev){btn.addEventListener(ev,stop);});
+  btn.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();fire();}});
+  btn.addEventListener('contextmenu',function(e){e.preventDefault();});
+}
+
+function update(){
+  var res=evaluate(S);
+  syncInputs();
+  renderPosline();renderChip(res);renderResult(res);renderZuflucht(res);renderMap();
+  return res;
+}
+
+/* ---- position acquisition ---- */
+function gpsErr(err){
+  var c=err&&err.code;
+  if(c===1)return 'GPS-Zugriff abgelehnt. In den Browser-/Systemeinstellungen erlauben – oder Position manuell eingeben bzw. Abschnitt wählen.';
+  if(c===3)return 'Kein GPS-Fix nach 15 s. Freie Sicht zum Himmel suchen oder Position manuell eingeben / Abschnitt wählen.';
+  return 'GPS nicht verfügbar. Position manuell eingeben oder Abschnitt wählen.';
+}
+function getGPS(ok,fail){
+  if(!navigator.geolocation){fail({code:2});return;}
+  try{navigator.geolocation.getCurrentPosition(ok,fail,{enableHighAccuracy:true,timeout:15000,maximumAge:0});}catch(e){fail({code:2});}
+}
+function doGPS(){
+  $('gpsmsg').textContent='Suche GPS-Position … (bis 15 s)';
+  getGPS(function(p){
+    S.pos={lat:p.coords.latitude,lon:p.coords.longitude,src:'gps',t:Date.now(),acc:p.coords.accuracy};
+    $('gpsmsg').textContent='GPS-Position übernommen (Genauigkeit ± '+Math.round(p.coords.accuracy)+' m).';
+    update();
+  },function(e){$('gpsmsg').textContent=gpsErr(e);});
+}
+function doManual(){
+  var la=parseDM($('latd').value,$('latm').value),lo=parseDM($('lond').value,$('lonm').value),m=$('manualmsg');
+  if(isNaN(la)||isNaN(lo)){m.textContent='Ungültig: Grad als Zahl, Minuten 0–59,9 (Dezimalpunkt oder Komma).';return;}
+  S.pos={lat:la,lon:lo,src:'manual',t:Date.now()};
+  m.textContent='Übernommen: '+formatPos(S.pos)+(isOutOfArea(S.pos)?' – ⚠ außerhalb des Törngebiets!':'');
+  update();
+}
+function setSegment(id){
+  var sg=SEGMENTS.filter(function(x){return x.id===id;})[0];
+  if(!sg){S.pos=null;}else S.pos={lat:sg.lat,lon:sg.lon,src:'segment',segId:sg.id,t:Date.now()};
+  update();
+}
+function doMyPos(){
+  var out=$('myposout');out.style.display='block';out.innerHTML='Suche GPS-Position … (bis 15 s)';
+  getGPS(function(p){
+    var now=Date.now(),pos={lat:p.coords.latitude,lon:p.coords.longitude};
+    out.innerHTML='<div class="note" style="margin-top:0">Zum Vorlesen:</div><div class="posbox">'+esc(formatDM(pos.lat,true))+'<br>'+esc(formatDM(pos.lon,false))+'</div>'
+      +'<div class="note">Stand '+esc(localClock(now))+' ('+esc(utcClock(now))+') · Genauigkeit ± '+Math.round(p.coords.accuracy)+' m</div>';
+  },function(e){out.innerHTML='<b>'+esc(gpsErr(e))+'</b><br>Position vom Plotter ablesen und vorlesen.';});
+}
+
+/* ---- Notfall ---- */
+var FIELD_IDS={name:'f-name',call:'f-call',mmsi:'f-mmsi',pers:'f-pers'};
+function renderMayday(){
+  var v={};Object.keys(FIELD_IDS).forEach(function(k){v[k]=$(FIELD_IDS[k]).value.trim();});
+  function ph(val,label){return val?'<b>'+esc(val)+'</b>':'<span class="ph">['+label+']</span>';}
+  var rep={name:ph(v.name,'Schiffsname'),call:ph(v.call,'Rufzeichen'),mmsi:ph(v.mmsi,'MMSI'),pers:ph(v.pers,'Anzahl')};
+  $('maydaytext').innerHTML=MAYDAY.map(function(l){return '<div>'+esc(l).replace(/\{(\w+)\}/g,function(m,k){return '\u0001'+k+'\u0002';}).replace(/\u0001(\w+)\u0002/g,function(m,k){return rep[k];})+'</div>';}).join('');
+}
+function utcHint(){return '(Ortszeit '+utcToLocal('12:00',Date.now()).label+' = UTC+'+euOffset(Date.now())+')';}
+function funkRows(){
+  var now=Date.now();
+  return FUNK.map(function(f){
+    var times='';
+    if(f.utc)times=f.utc.map(function(u){return utcToLocal(u,now).text;}).join(' · ');
+    return {k:f.k,v:f.v,times:times,label:utcToLocal('12:00',now).label,badge:f.badge,ver:f.ver,utc:f.utc};
+  });
+}
+function renderFunk(){
+  var rows=funkRows();
+  $('funkcard').innerHTML=rows.map(function(r){
+    return '<div class="kv" style="display:block"><b style="display:block;text-align:left">'+esc(r.k)+(r.badge?' <span class="badge unv">'+esc(r.badge)+'</span>':'')+'</b><div>'+esc(r.v)+'</div>'
+      +(r.times?'<div class="note" style="margin-top:2px">= Ortszeit '+esc(r.times)+' ('+r.label+')</div>':'')+'</div>';
+  }).join('')+'<div class="note small">Zeiten: UTC wird automatisch in Ortszeit umgerechnet (CEST = UTC+2 bis 25.10.2026, danach CET = UTC+1).</div>';
+  $('vhfcard').innerHTML=vhfRows().map(function(r){
+    return '<div class="kv"><span>'+esc(r.name)+'</span><b>'+r.html+'</b></div>';
+  }).join('');
+}
+function sortedNS(){return DATA.slice().sort(function(a,b){return b.lat-a.lat;});}
+function vhfRows(){
+  return sortedNS().map(function(h){
+    var v=h.vhf?'VHF '+esc(h.vhf)+(h.verified.vhf?' ✔':' (ungeprüft)'):'unbekannt – VHF 16 / Revierführer';
+    var t=h.tel?' · '+esc(h.tel)+(h.verified.tel?' ✔':' (ungeprüft)'):'';
+    return {name:h.name,html:v+t};
+  });
+}
+
+/* ---- Regeln (generated from CONST) ---- */
+function renderRegeln(){
+  var rt=reffThresholds(false),rk=reffThresholds(true);
+  var rows='<table class="tbl"><tr><th>Stufe</th><th>ohne Kinder</th><th>mit Kindern</th></tr>';
+  var lo=[0,rt[0],rt[1],rt[2]],lk=[0,rk[0],rk[1],rk[2]];
+  for(var i=0;i<4;i++){
+    function rg(a,i){return i===0?'< '+a[1]:i===3?'≥ '+a[3]:a[i]+'–<'+a[i+1];}
+    rows+='<tr><td><b>'+esc(CONST.reff.names[i])+'</b></td><td>'+rg(lo,i)+' kn</td><td>'+rg(lk,i)+' kn</td></tr>';
+  }
+  $('refftbl').innerHTML=rows+'</table><div class="note small">Kursfaktoren (scheinbar = Böen × Faktor): '+CONST.courses.map(function(c){return c+' '+CONST.courseFactor[c];}).join(' · ')+'</div>';
+  var T=CONST.traffic;
+  $('traffictbl').innerHTML='<table class="tbl"><tr><th>Ampel</th><th>ohne Kinder</th><th>mit Kindern</th></tr>'
+    +'<tr><td>✔ grün</td><td>&lt; '+T.yellow+' kn</td><td>&lt; '+(T.yellow-T.kidsOffset)+' kn</td></tr>'
+    +'<tr><td>⚠ gelb</td><td>'+T.yellow+'–&lt;'+T.red+' kn</td><td>'+(T.yellow-T.kidsOffset)+'–&lt;'+(T.red-T.kidsOffset)+' kn</td></tr>'
+    +'<tr><td>✖ rot</td><td>≥ '+T.red+' kn</td><td>≥ '+(T.red-T.kidsOffset)+' kn</td></tr></table>'
+    +'<div class="note small">Dünung ab '+T.swellYellow+' m mindestens gelb, ab '+T.swellRed+' m rot. Maßgeblich sind die wahren Böen.</div>';
+  var G=CONST.harborGust,HS=CONST.harborSwell;
+  $('harborrules').innerHTML='<ul class="tight"><li>Wind aus geschützter Richtung = ✔, teilgeschützt = ⚠, offen = ✖.</li>'
+    +'<li>Schwell aus gefährlicher Richtung: ab '+nmDec(HS.yellow)+' m ⚠, ab '+nmDec(HS.red)+' m ✖.</li>'
+    +'<li>Böen: Ankerbucht ⚠ ab '+G.bucht[0]+' / ✖ ab '+G.bucht[1]+' kn · Hafen/Marina ⚠ ab '+G.hafen[0]+' / ✖ ab '+G.hafen[1]+' kn · Allwetterhafen ⚠ ab '+G.aw[0]+' kn, nie ✖ nur wegen Böen.</li>'
+    +'<li>Schutz unbekannt oder „keine Zuflucht“ = ? grau, nicht einplanen. Ungeprüfte Sektoren sind markiert.</li></ul>';
+  var O=CONST.orosei,B=CONST.bonifacio;
+  $('gaterules').innerHTML='<ul class="tight">'
+    +'<li><b>Orosei-Gate:</b> Position Posada–Tavolara–Olbia–Figari–Golfo di Orosei (Ostküste lat '+nmDec(O.latMin)+'–'+nmDec(O.latMax)+'), Wind aus '+O.windDirs.join('/')+' mit Böen ≥ '+O.gust+' kn (Kinder ≥ '+(O.gust-3)+') oder Dünung aus '+O.swellDirs.join('/')+' ≥ '+nmDec(O.swellH)+' m → ✖ nicht nach Süden in den Golf.</li>'
+    +'<li><b>Bonifacio-Gate:</b> Bonifacio–Santa Teresa–Maddalena, Wind aus '+B.dirs.join('/')+' mit Böen ≥ '+B.gust+' kn → ✖ Düse: +'+B.plusMin+'–'+B.plusMax+' kn in der Passage.</li>'
+    +'<li><b>Trend-Gate:</b> Winddrehung/Front erwartet → mindestens ⚠.</li>'
+    +'<li><b>Teulada:</b> immer Hinweis Sperrgebiet/NAVTEX.</li></ul>';
+  var n=DATA.length,pv=DATA.filter(function(h){return h.verified.prot;}).length,ps=DATA.filter(function(h){return h.verified.pos;}).length,vv=DATA.filter(function(h){return h.verified.vhf;}).length,unk=DATA.filter(function(h){return protCount(h)===0;}).length;
+  $('dataqual').innerHTML='<ul class="tight"><li>Datenstand '+CONST.datenstand+'. Von '+n+' Plätzen: Schutzsektoren geprüft <b>'+pv+'</b>, Lage geprüft <b>'+ps+'</b>, VHF geprüft <b>'+vv+'</b>, Schutz unbekannt <b>'+unk+'</b>.</li>'
+    +'<li>Alles andere ist <span class="badge unv">ungeprüft</span> und nur eine Näherung (Koordinaten ca. ±0,5 sm). Gerade die Schutzsektoren immer mit Seekarte und Revierführer gegenprüfen.</li>'
+    +'<li>Quellen, soweit geprüft: Meteoconsult, sea-seek, CruisersWiki, Round Robin Vela, mailasail/IHO.</li>'
+    +'<li>Entfernungen sind Luftlinie – der Seeweg ist länger. Dünung wird nur berücksichtigt, wenn sie eingegeben wird.</li></ul>';
+  document.querySelector('.disc').textContent=DISCLAIMER;
+}
+function renderDatenstand(){
+  var n=DATA.length,pv=DATA.filter(function(h){return h.verified.prot;}).length;
+  $('datenstand').innerHTML='Datenstand '+CONST.datenstand+' · <b>'+pv+' von '+n+' Plätzen geprüft</b> (Schutzsektoren) · alles andere „ungeprüft“';
+}
+
+/* ---- printed Bordkarte (same DATA) ---- */
+function pFlag(ok){return ok?'<span class="ok">✔</span>':'<span class="unv">?</span>';}
+function buildPrint(){
+  var now=Date.now(),p='';
+  p+='<section class="pp"><h1>Bordkarte Ost-Sardinien · Lagoon 52 A-99134</h1><div class="sub">Törn 17.–24.10.2026 · Start DYC Marina Olbia · Straße von Bonifacio bis Capo Teulada · Datenstand '+CONST.datenstand+'</div>';
+  p+='<h2 class="red">Notfall</h2><div class="nums">'+EMERGENCY.map(function(e){return '<div class="num"><b>'+e.num+'</b><strong>'+esc(e.title)+'</strong><br>'+esc(e.sub)+'</div>';}).join('')+'</div>';
+  p+='<div class="box red"><b>'+esc(DSC_TEXT.head)+':</b> '+esc(DSC_TEXT.body)+' '+esc(DSC_TEXT.note)+'</div>';
+  p+='<div class="two"><div class="box red"><b>MAYDAY – Sprechschema</b>';
+  MAYDAY.forEach(function(l){
+    var t=esc(l).replace('{name}','________').replace('{name}','________').replace('{name}','________').replace('{call}','________').replace('{mmsi}','_________').replace('{pers}','____');
+    p+='<span class="ln">'+t+'</span>';
+  });
+  p+='</div><div><div class="box red"><b>Meine Position (Grad / Dezimalminuten)</b><span class="ln">&nbsp;</span><span class="ln">&nbsp;</span><span class="ln">Uhrzeit: </span></div>';
+  p+='<div class="box"><b>PAN PAN</b> – Dringlichkeit ohne unmittelbare Lebensgefahr: gleiches Schema, „PAN PAN“ ×3 statt „MAYDAY“.</div>';
+  p+='<div class="box"><b>Zuständig:</b> Italien MRCC Rom über <b>1530</b> / CH 16. Französische Gewässer (Bonifacio, Lavezzi, Porto-Vecchio): <b>CROSS MED (Corse)</b> über UKW CH 16. Telefonnummer: <span class="unv">ungeprüft</span>, nicht angegeben.</div></div></div>';
+  p+='<h2>Funk · Wetter</h2><table><thead><tr><th style="width:40mm">Dienst</th><th>Angabe</th><th style="width:36mm">Ortszeit ('+utcToLocal('12:00',now).label+')</th></tr></thead><tbody>';
+  funkRows().forEach(function(r){
+    p+='<tr><td><b>'+esc(r.k)+'</b></td><td>'+esc(r.v)+(r.badge?' <span class="unv">['+esc(r.badge)+']</span>':'')+'</td><td>'+esc(r.times||'')+'</td></tr>';
+  });
+  p+='</tbody></table><div class="foot">Zeitzone: UTC → Ortszeit (CEST = UTC+2 bis 25.10.2026). '+esc(DISCLAIMER)+'</div></section>';
+
+  p+='<section class="pp"><h1>Häfen und Ankerplätze – Nord → Süd</h1><div class="sub"><span class="ok">✔</span> = geprüft · <span class="unv">?</span> = ungeprüft. Positionen ca. (Grad/Dezimalminuten). Schutz: voll / teils (Rest offen). Schwell = Richtungen, aus denen Einfahrt/Liegeplatz gefährlich ist.</div>';
+  p+='<table><colgroup><col style="width:31mm"><col style="width:15mm"><col style="width:29mm"><col style="width:33mm"><col style="width:16mm"><col style="width:14mm"><col style="width:24mm"><col style="width:28mm"></colgroup>';
+  p+='<thead><tr><th>Name</th><th>Typ</th><th>Position</th><th>Schutz</th><th>Schwell-Gefahr</th><th>VHF</th><th>Tel.</th><th>Status geprüft</th></tr></thead>';
+  var groups={};SEGMENTS.forEach(function(sg){groups[sg.id]=[];});
+  DATA.forEach(function(h){groups[nearestSegment(h).id].push(h);});
+  SEGMENTS.slice().sort(function(a,b){return b.lat-a.lat;}).forEach(function(sg){
+    var hs=groups[sg.id].sort(function(a,b){return b.lat-a.lat;});
+    if(!hs.length)return;
+    p+='<tbody class="gh"><tr><th colspan="8">'+esc(sg.name)+'</th></tr></tbody>';
+    hs.forEach(function(h){
+      var full=[],part=[];DIRS.forEach(function(d){if(h.prot[d]==='full')full.push(d);else if(h.prot[d]==='part')part.push(d);});
+      var prot=protCount(h)===0?'<b>unbekannt</b>':(full.length===8?'<b>voll: alle 8</b>':(full.length?'<b>voll:</b> '+full.join(' '):'')+(part.length?(full.length?' · ':'')+'<b>teils:</b> '+part.join(' '):''));
+      var sw=h.swellOpen.length?h.swellOpen.join(' '):(protCount(h)===0?'unbekannt':'–');
+      var vhf=h.vhf?esc(h.vhf)+' '+pFlag(h.verified.vhf):'unbek.';
+      var tel=h.tel?esc(h.tel)+' '+pFlag(h.verified.tel):'unbekannt';
+      var anyv=h.verified.pos||h.verified.prot||h.verified.vhf||h.verified.tel;
+      var stat=anyv?'Lage '+pFlag(h.verified.pos)+' Schutz '+pFlag(h.verified.prot)+'<br>VHF '+pFlag(h.verified.vhf)+' Tel '+pFlag(h.verified.tel):'<span class="unv">ungeprüft</span>';
+      var typ=TYPE_LABEL[h.type]+(h.refuge===false?'<br><b>keine Zuflucht</b>':'');
+      p+='<tbody class="pl" data-hid="'+h.id+'"><tr class="main"><td><b>'+esc(h.name)+'</b></td><td>'+typ+'</td><td>'+esc(formatDM(h.lat,true))+'<br>'+esc(formatDM(h.lon,false))+' '+pFlag(h.verified.pos)+'</td><td>'+prot+' '+pFlag(h.verified.prot)+'</td><td>'+sw+'</td><td>'+vhf+'</td><td>'+tel+'</td><td>'+stat+'</td></tr>';
+      p+='<tr class="nt"><td colspan="8">'+esc(h.note)+(h.src?' <i>(Quelle: '+esc(h.src)+')</i>':'')+'</td></tr></tbody>';
+    });
+  });
+  p+='</table></section>';
+
+  p+='<section class="pp"><h1>Regeln an Bord</h1><div class="sub">Aus denselben Konstanten wie die App.</div>';
+  var rt=reffThresholds(false),rk=reffThresholds(true);
+  p+='<h2>Reff-Plan (scheinbarer Wind = Böen × Kursfaktor)</h2><table><thead><tr><th>Stufe</th><th>ohne Kinder</th><th>mit Kindern (−3 kn)</th></tr></thead><tbody>';
+  for(var i=0;i<4;i++){
+    var a=[0].concat(rt),b=[0].concat(rk);
+    var f=function(x,i){return i===0?'< '+x[1]:i===3?'≥ '+x[3]:x[i]+' bis < '+x[i+1];};
+    p+='<tr class="rt"><td><b>'+esc(CONST.reff.names[i])+'</b></td><td>'+f(a,i)+' kn</td><td>'+f(b,i)+' kn</td></tr>';
+  }
+  p+='</tbody></table><div class="sub" style="margin-top:1mm">Kursfaktoren: '+CONST.courses.map(function(c){return c+' ×'+CONST.courseFactor[c];}).join(' · ')+'</div>';
+  var T=CONST.traffic;
+  p+='<h2>Ampel unterwegs (wahre Böen)</h2><div class="box">✔ grün &lt; '+T.yellow+' kn (Kinder &lt; '+(T.yellow-3)+') · ⚠ gelb '+T.yellow+'–&lt;'+T.red+' kn (Kinder '+(T.yellow-3)+'–&lt;'+(T.red-3)+') · ✖ rot ≥ '+T.red+' kn (Kinder ≥ '+(T.red-3)+'). Dünung ≥ '+T.swellYellow+' m mind. gelb, ≥ '+T.swellRed+' m rot.</div>';
+  var O=CONST.orosei,B=CONST.bonifacio;
+  p+='<h2 class="red">Revier-Gates</h2><div class="box red"><b>Orosei:</b> Wind aus N/NE/E/SE mit Böen ≥ '+O.gust+' kn (Kinder ≥ '+(O.gust-3)+') oder Dünung aus N/NE/E/SE ≥ '+nmDec(O.swellH)+' m → <b>nicht nach Süden in den Golfo di Orosei</b>, im Hafen warten (Olbia/Porto Cervo). Im Golf: ablaufen nach Arbatax/S. M. Navarrese (See von achtern).</div>';
+  p+='<div class="box red"><b>Bonifacio:</b> Wind aus W/NW (Mistral) oder E/SE (Levante) mit Böen ≥ '+B.gust+' kn → in der Passage +'+B.plusMin+'–'+B.plusMax+' kn über Prognose (effektiv Böen +10 bis +15).</div>';
+  p+='<div class="box"><b>Winddrehung/Front erwartet:</b> nur Ankerplätze mit Schutz in beiden Richtungen oder Hafen. <b>Teulada:</b> Sperrgebiet, NAVTEX beachten; Cala Zafferano / Porto Scudo keine Zuflucht.</div>';
+  var G=CONST.harborGust;
+  p+='<h2>Zufluchtsort-Bewertung</h2><div class="box">Böen: Ankerbucht ⚠ ≥ '+G.bucht[0]+' / ✖ ≥ '+G.bucht[1]+' kn · Hafen/Marina ⚠ ≥ '+G.hafen[0]+' / ✖ ≥ '+G.hafen[1]+' kn · Allwetter ⚠ ≥ '+G.aw[0]+' kn. Schwell aus Gefahrenrichtung: ⚠ ≥ '+nmDec(CONST.harborSwell.yellow)+' m, ✖ ≥ '+nmDec(CONST.harborSwell.red)+' m. „?“ = ungeprüft; unbekannter Schutz: nicht einplanen.</div>';
+  p+='<div class="foot"><b>'+esc(DISCLAIMER)+'</b> Datenstand '+CONST.datenstand+' · '+DATA.filter(function(h){return h.verified.prot;}).length+' von '+DATA.length+' Plätzen (Schutzsektoren) geprüft.</div></section>';
+  $('printdoc').innerHTML=p;
+}
+
+/* ---- navigation / init ---- */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(function(x){x.classList.toggle('active',x.id===id);});
+  document.querySelectorAll('nav button').forEach(function(b){b.classList.toggle('on',b.dataset.scr===id);});
+  window.scrollTo(0,0);
+}
+function applyTheme(night){
+  if(night)document.documentElement.setAttribute('data-theme','night');else document.documentElement.removeAttribute('data-theme');
+  var b=$('themebtn');b.setAttribute('aria-pressed',night?'true':'false');b.textContent=night?'☀ Tag':'☾ Nacht';
+  var m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',night?'#000000':'#12141f');
+}
+function offlineState(){
+  var el=$('offlinestate'),proto=location.protocol;
+  if(proto==='file:')el.textContent='Lokale Datei: läuft ohne Netz. Datei auf dem Gerät speichern, um sie offline zu öffnen.';
+  else el.textContent='Offline-Cache wird eingerichtet … (Status: noch nicht bestätigt)';
+}
+function registerSW(){
+  try{
+    if(!(location.protocol==='http:'||location.protocol==='https:')||!('serviceWorker' in navigator))return;
+    var l=document.createElement('link');l.rel='manifest';l.href='manifest.webmanifest';document.head.appendChild(l);
+    fetch('sw.js',{method:'HEAD',cache:'no-store'}).then(function(r){
+      if(!r.ok)throw new Error('no sw');
+      return navigator.serviceWorker.register('sw.js');
+    }).then(function(reg){
+      var el=$('offlinestate');
+      if(reg&&el)el.textContent='Offline-Cache aktiv, sobald die Seite einmal vollständig geladen wurde.';
+    }).catch(function(){
+      var el=$('offlinestate');if(el)el.textContent='Kein Offline-Cache (Service Worker nicht verfügbar). Seite bleibt geöffnet oder Datei lokal speichern.';
+    });
+  }catch(e){}
+}
+
+function init(){
+  buildInputs();renderRegeln();renderDatenstand();renderFunk();buildPrint();offlineState();
+  var names=load('skipper.fields');
+  try{var o=names?JSON.parse(names):{};Object.keys(FIELD_IDS).forEach(function(k){$(FIELD_IDS[k]).value=o[k]||'';});}catch(e){}
+  Object.keys(FIELD_IDS).forEach(function(k){$(FIELD_IDS[k]).addEventListener('input',function(){
+    var o={};Object.keys(FIELD_IDS).forEach(function(kk){o[kk]=$(FIELD_IDS[kk]).value;});store('skipper.fields',JSON.stringify(o));renderMayday();});});
+  renderMayday();
+  applyTheme(load('skipper.night')==='1');
+  $('themebtn').addEventListener('click',function(){var n=document.documentElement.getAttribute('data-theme')!=='night';store('skipper.night',n?'1':'0');applyTheme(n);});
+  document.querySelectorAll('.stepper button').forEach(bindStepper);
+  $('dirgrid').addEventListener('click',function(e){var b=e.target.closest('[data-dir]');if(b){S.dir=b.dataset.dir;update();}});
+  $('swelldirgrid').addEventListener('click',function(e){var b=e.target.closest('[data-sdir]');if(b){S.swellDir=b.dataset.sdir||null;if(!S.swellDir)S.swellH=0;update();}});
+  $('coursegrid').addEventListener('click',function(e){var b=e.target.closest('[data-course]');if(b){S.course=b.dataset.course;update();}});
+  $('kids').addEventListener('change',function(){S.kids=$('kids').checked;update();});
+  $('trend').addEventListener('change',function(){S.trend=$('trend').checked;update();});
+  $('filtertog').addEventListener('click',function(){S.filter=!S.filter;update();});
+  $('btn-gps').addEventListener('click',doGPS);
+  $('btn-manual').addEventListener('click',doManual);
+  $('btn-mypos').addEventListener('click',doMyPos);
+  $('segselect').addEventListener('change',function(){setSegment($('segselect').value);});
+  $('coastmap').addEventListener('click',function(e){var g=e.target.closest('.segdot');if(g)setSegment(g.dataset.id);});
+  document.querySelectorAll('nav button').forEach(function(b){b.addEventListener('click',function(){showScreen(b.dataset.scr);});});
+  update();
+  setInterval(renderPosline,30000);
+  registerSW();
+}
+
+window.SKIPPER={DATA:DATA,SEGMENTS:SEGMENTS,CONST:CONST,DIRS:DIRS,evaluate:evaluate,harborStatus:harborStatus,reffStufe:reffStufe,reffLevel:reffLevel,
+  apparentWind:apparentWind,haversineNm:haversineNm,bearingDeg:bearingDeg,normalize:normalize,sectionOf:sectionOf,nearestSegment:nearestSegment,
+  rank:rank,recommend:recommend,generalLevel:generalLevel,formatDM:formatDM,parseDM:parseDM,utcToLocal:utcToLocal,euOffset:euOffset,isOutOfArea:isOutOfArea,
+  state:S,update:update,DISCLAIMER:DISCLAIMER};
+
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+</body>
+</html>
